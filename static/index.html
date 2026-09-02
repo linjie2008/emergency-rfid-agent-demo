@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>市一医院 · 急诊智能查询</title>
+  <style>
+    :root {
+      --bg:#e8f1f6; --paper:#fff; --navy:#0a4b73; --blue:#1677aa; --teal:#1b8f82;
+      --red:#c44536; --line:#d3e3ee; --text:#1d2d38; --muted:#6a8294;
+      --ok:#1b8a5a; --bad:#c44536; --warn:#c47b16; --chip:#eaf4fa;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(1200px 400px at 10% -10%, #d7eef5 0%, transparent 55%),
+        linear-gradient(180deg, #f3f8fb 0%, var(--bg) 40%);
+    }
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; background: var(--navy); color: #fff;
+      box-shadow: 0 2px 10px rgba(10,75,115,.25);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .cross {
+      width: 36px; height: 36px; background: #fff; border-radius: 8px;
+      position: relative; flex: 0 0 36px;
+    }
+    .cross:before, .cross:after { content: ""; position: absolute; background: var(--red); }
+    .cross:before { width: 10px; height: 26px; left: 13px; top: 5px; }
+    .cross:after { width: 26px; height: 10px; left: 5px; top: 13px; }
+    .brand h1 { margin: 0; font-size: 18px; font-weight: 650; letter-spacing: .04em; }
+    .brand p { margin: 2px 0 0; font-size: 12px; opacity: .8; }
+    .ecg { width: 180px; height: 28px; opacity: .7; }
+    .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+    .pill { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); padding: 4px 10px; border-radius: 99px; }
+    .pill.ok { background: #1b8f82; border-color: transparent; }
+    .wrap { display: grid; grid-template-columns: 260px 1fr; gap: 14px; padding: 14px 16px 18px; height: calc(100% - 64px); }
+    .side, .stage { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; min-height: 0; }
+    .side { display: flex; flex-direction: column; overflow: hidden; }
+    .side h2 { margin: 0; padding: 14px 14px 8px; font-size: 13px; color: var(--navy); letter-spacing: .08em; }
+    .side-actions { padding: 0 12px 10px; display: flex; gap: 8px; }
+    .side-actions button, .ghost {
+      flex: 1; border: 1px solid var(--line); background: var(--chip); color: var(--navy);
+      border-radius: 8px; padding: 7px 8px; cursor: pointer; font-size: 12px;
+    }
+    #hist { flex: 1; overflow: auto; padding: 0 8px 12px; }
+    .hitem {
+      position:relative; overflow:hidden; border: 1px solid var(--line); border-left:6px solid var(--hist-accent,var(--teal)); border-radius: 10px; padding: 11px 10px 9px; margin: 0 0 9px;
+      cursor: pointer; background: #fbfdfe; transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+    }
+    .hitem::after { content:""; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,var(--hist-accent,var(--teal)),transparent 82%); opacity:.95; }
+    .hitem.on { border-color: var(--blue); background: #eef7fc; }
+    .hitem-head { display:flex; align-items:center; gap:6px; min-width:0; }
+    .hitem .t { flex:1; min-width:0; font-size: 13px; font-weight: 750; color: var(--hist-accent,var(--navy)); text-shadow:0 0 12px color-mix(in srgb,var(--hist-accent,var(--teal)) 32%,transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hitem .t::before { content:""; display:inline-block; width:6px; height:6px; margin:0 7px 1px 0; border-radius:50%; background:var(--hist-accent,var(--teal)); box-shadow:0 0 8px var(--hist-accent,var(--teal)); }
+    .hactions { display:flex; gap:3px; opacity:0; transform:translateX(3px); transition:opacity .16s ease,transform .16s ease; }
+    .hitem:hover .hactions, .hitem:focus-within .hactions { opacity:1; transform:none; }
+    .hact { display:grid; place-items:center; width:23px; height:23px; padding:0; border:1px solid var(--line); border-radius:6px; color:var(--muted); background:rgba(8,32,48,.72); cursor:pointer; font-size:12px; line-height:1; }
+    .hact:hover { color:var(--cyan); border-color:var(--cyan); background:rgba(20,99,125,.55); }
+    .hact.delete:hover { color:var(--bad); border-color:var(--bad); background:rgba(255,85,115,.1); }
+    .hitem .s { font-size: 11px; color: var(--muted); margin-top: 3px; display: flex; justify-content: space-between; }
+    .tag { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: #e6f4ef; color: var(--teal); }
+    .tag.asset { background: #fff3e6; color: var(--warn); }
+    .tag.green { background: #e8f1fb; color: var(--blue); }
+    .stage { display: flex; flex-direction: column; padding: 12px 14px 14px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .tabs button {
+      border: 0; background: var(--chip); color: var(--navy); padding: 7px 14px;
+      border-radius: 99px; cursor: pointer; font-size: 13px;
+    }
+    .tabs button.on { background: var(--navy); color: #fff; }
+    .panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
+    .panel.on { display: flex; }
+    #log {
+      flex: 1; overflow: auto; background: linear-gradient(180deg, #f7fbfd, #fff);
+      border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 48px 16px; font-size: 13px; }
+    .msg { margin: 0 0 14px; max-width: 92%; }
+    .msg.user { margin-left: auto; }
+    .msg .who { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .msg.user .bubble {
+      background: var(--navy); color: #fff; border-radius: 12px 12px 4px 12px;
+      padding: 9px 12px; white-space: pre-wrap;
+    }
+    .msg.bot .bubble {
+      background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--teal);
+      border-radius: 4px 12px 12px 12px; padding: 10px 12px;
+    }
+    .msg .body { overflow-x: auto; line-height: 1.55; font-size: 14px; }
+    .msg .body p { margin: 0 0 8px; }
+    .msg .body h3 { margin: 10px 0 6px; font-size: 14px; color: var(--navy); }
+    .msg .body table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 6px 0 10px; min-width: 400px; }
+    .msg .body th { background: #eaf3f8; color: var(--navy); }
+    .msg .body th, .msg .body td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+    .msg .body tr:nth-child(even) td { background: #f7fbfd; }
+    .kpi { color: var(--blue); margin: 0 0 8px; }
+    .status { color: var(--warn); font-size: 12px; margin: 0 0 6px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+    .chips button {
+      background: var(--chip); color: var(--navy); border: 1px solid var(--line);
+      border-radius: 99px; padding: 5px 10px; cursor: pointer; font-size: 12px;
+    }
+    .composer { display: flex; gap: 8px; }
+    .composer input {
+      flex: 1; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
+      background: #fff; color: var(--text);
+    }
+    button.go {
+      background: var(--blue); color: #fff; border: 0; padding: 10px 16px;
+      border-radius: 10px; font-weight: 650; cursor: pointer;
+    }
+    .row { display: flex; gap: 10px; align-items: center; margin: 8px 0 12px; flex-wrap: wrap; }
+    select, .row button { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+    .ok { color: var(--ok); } .fail { color: var(--bad); }
+    pre { background: #f5fafc; border: 1px solid var(--line); padding: 12px; border-radius: 8px; overflow: auto; }
+    table.grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.grid th, table.grid td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; }
+    .kb-head { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+    .kb-head input { flex:1; min-width:240px; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:var(--paper-2); color:var(--text); }
+    .kb-note { margin:0 0 12px; color:var(--muted); font-size:12px; line-height:1.6; }
+    .kb-results { overflow:auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:11px; padding:1px; }
+    .kb-card { border:1px solid var(--line); border-left:3px solid var(--teal); border-radius:11px; padding:13px; background:rgba(10,34,49,.72); }
+    .kb-card.asset { border-left-color:var(--warn); }
+    .kb-card h3 { margin:0 0 7px; color:var(--cyan); font-size:14px; line-height:1.45; }
+    .kb-meta { color:var(--muted); font-size:11px; line-height:1.6; }
+    .kb-card p { margin:8px 0; font-size:12px; line-height:1.6; }
+    .kb-card ul { margin:7px 0; padding-left:18px; font-size:12px; line-height:1.6; }
+    .kb-card a { color:var(--teal); text-decoration:none; font-size:12px; }
+    .kb-card a:hover { text-decoration:underline; }
+    @media (max-width: 860px) {
+      .wrap { grid-template-columns: 1fr; height: auto; }
+      .side { max-height: 220px; }
+      .hactions { opacity:1; transform:none; }
+    }
+    /* 科技医疗主题：深海蓝底、医疗青光与数据舱体 */
+    :root {
+      --bg: #06131f; --paper: rgba(10, 29, 44, .88); --paper-2: #0d2638;
+      --navy: #071a2b; --blue: #28b9ff; --teal: #43f0cf; --cyan: #7deaff;
+      --red: #ff5573; --line: rgba(75, 181, 220, .24); --line-strong: rgba(91, 220, 245, .52);
+      --text: #e4f7ff; --muted: #7fa6b9; --ok: #42e0ae; --bad: #ff6b82;
+      --warn: #ffc45d; --chip: rgba(24, 83, 111, .38);
+    }
+    html { background: var(--bg); }
+    body {
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(54, 157, 196, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(54, 157, 196, .045) 1px, transparent 1px),
+        radial-gradient(900px 450px at 12% -10%, rgba(0, 183, 255, .2), transparent 65%),
+        radial-gradient(700px 500px at 100% 100%, rgba(26, 111, 154, .16), transparent 65%),
+        linear-gradient(180deg, #071a2a 0%, #06131f 70%);
+      background-size: 32px 32px, 32px 32px, auto, auto, auto;
+    }
+    .top {
+      position: relative; min-height: 68px; padding: 13px 24px;
+      background: rgba(4, 19, 32, .88); border-bottom: 1px solid var(--line-strong);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .28), inset 0 -1px rgba(125, 234, 255, .08);
+      backdrop-filter: blur(14px);
+    }
+    .top::after {
+      content: ""; position: absolute; left: 24px; right: 24px; bottom: -1px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent); opacity: .8;
+    }
+    .brand { gap: 13px; }
+    .cross {
+      width: 40px; height: 40px; flex-basis: 40px; border-radius: 11px;
+      background: linear-gradient(145deg, #dfffff, #8eeaff);
+      box-shadow: 0 0 0 1px rgba(125, 234, 255, .65), 0 0 22px rgba(40, 185, 255, .42);
+    }
+    .cross:before, .cross:after { background: #087aa4; }
+    .cross:before { width: 10px; height: 28px; left: 15px; top: 6px; }
+    .cross:after { width: 28px; height: 10px; left: 6px; top: 15px; }
+    .brand h1 { color: #f0fdff; font-size: 19px; letter-spacing: .08em; text-shadow: 0 0 18px rgba(125, 234, 255, .3); }
+    .brand p { color: var(--cyan); letter-spacing: .1em; font-size: 10px; }
+    .ecg { width: 220px; opacity: .9; filter: drop-shadow(0 0 5px rgba(67, 240, 207, .75)); }
+    .meta { gap: 9px; }
+    .pill { color: #bdebf6; background: rgba(18, 68, 91, .52); border-color: var(--line); }
+    .pill.ok { color: #06251f; background: var(--teal); box-shadow: 0 0 15px rgba(67, 240, 207, .35); }
+    .wrap { grid-template-columns: 278px 1fr; gap: 16px; padding: 17px 20px 20px; height: calc(100% - 68px); }
+    .side, .stage {
+      background: linear-gradient(145deg, rgba(12, 39, 57, .94), rgba(7, 25, 39, .94));
+      border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, .22), inset 0 1px rgba(163, 239, 255, .06);
+    }
+    .side { position: relative; }
+    .side::before, .stage::before {
+      content: ""; position: absolute; pointer-events: none; width: 9px; height: 9px;
+      border-top: 1px solid var(--cyan); border-left: 1px solid var(--cyan); opacity: .8;
+    }
+    .side::before { left: -1px; top: -1px; }
+    .stage { position: relative; }
+    .stage::before { right: -1px; bottom: -1px; transform: rotate(180deg); }
+    .side h2 { color: var(--cyan); padding: 16px 16px 10px; letter-spacing: .14em; font-size: 12px; }
+    .side h2::before { content: "◈  "; color: var(--teal); }
+    .side-actions { padding: 0 14px 12px; }
+    .side-actions button, .ghost, select, .row button {
+      color: #bfeaf4; background: rgba(15, 60, 82, .58); border-color: var(--line);
+    }
+    .side-actions button:hover, .ghost:hover, select:hover, .row button:hover { border-color: var(--cyan); color: #fff; background: rgba(20, 99, 125, .62); }
+    #hist { padding: 0 10px 14px; }
+    .hitem { background: var(--hist-bg,rgba(8,32,48,.72)); border-color: color-mix(in srgb,var(--hist-accent,var(--cyan)) 64%,transparent); border-left-color:var(--hist-accent,var(--teal)); border-radius: 10px; }
+    .hitem:hover { border-color:var(--hist-accent,var(--cyan)); background:var(--hist-bg-active,rgba(18,75,99,.58)); transform:translateX(2px); box-shadow:0 0 20px color-mix(in srgb,var(--hist-accent,var(--cyan)) 28%,transparent); }
+    .hitem.on { border-color:var(--hist-accent,var(--cyan)); background:var(--hist-bg-active,rgba(18,75,99,.62)); box-shadow:inset 0 0 0 1px var(--hist-accent,var(--teal)),0 0 24px color-mix(in srgb,var(--hist-accent,var(--cyan)) 40%,transparent); }
+    .hitem .t { color:var(--hist-accent,var(--cyan)); }
+    .hitem .s { color: var(--muted); }
+    .tag { background: rgba(67, 240, 207, .12); color: var(--teal); border: 1px solid rgba(67, 240, 207, .2); }
+    .tag.asset { background: rgba(255, 196, 93, .12); color: var(--warn); border-color: rgba(255, 196, 93, .2); }
+    .tag.green { background: rgba(40, 185, 255, .12); color: var(--cyan); border-color: rgba(40, 185, 255, .2); }
+    .stage { padding: 14px 16px 16px; }
+    .tabs { border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    .tabs button { color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 8px; letter-spacing: .04em; }
+    .tabs button:hover { color: var(--cyan); border-color: var(--line); }
+    .tabs button.on { color: #061b2a; background: linear-gradient(135deg, var(--teal), var(--cyan)); box-shadow: 0 0 18px rgba(67, 240, 207, .2); }
+    #log { background: linear-gradient(180deg, rgba(4, 22, 35, .75), rgba(8, 29, 44, .5)); border-color: var(--line); }
+    .empty { color: var(--muted); }
+    .msg .who { color: #6f9caf; letter-spacing: .05em; }
+    .msg.user .bubble { background: linear-gradient(135deg, #087aa5, #164c83); border: 1px solid rgba(125, 234, 255, .34); box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+    .msg.bot .bubble { background: rgba(10, 38, 55, .84); border-color: var(--line); border-left-color: var(--teal); box-shadow: 0 8px 24px rgba(0, 0, 0, .16); }
+    .msg .body h3 { color: var(--cyan); }
+    .msg .body th { color: #b9f2ff; background: rgba(21, 92, 119, .5); }
+    .msg .body th, .msg .body td { border-color: var(--line); }
+    .msg .body tr:nth-child(even) td { background: rgba(17, 67, 88, .2); }
+    .kpi { color: var(--teal); }
+    .status { color: var(--cyan); }
+    .chips { padding-top: 8px; border-top: 1px solid rgba(75, 181, 220, .14); }
+    .chips button { color: #aee4f1; background: rgba(16, 65, 87, .42); border-color: var(--line); }
+    .chips button:hover { color: #061b2a; background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 14px rgba(125, 234, 255, .3); }
+    .composer input { color: var(--text); background: rgba(3, 19, 31, .75); border-color: var(--line); outline: none; }
+    .composer input::placeholder { color: #62899d; }
+    .composer input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(40, 185, 255, .12); }
+    button.go { background: linear-gradient(135deg, #18a8e5, #1b8dbe); border: 1px solid rgba(125, 234, 255, .4); box-shadow: 0 0 18px rgba(40, 185, 255, .18); }
+    button.go:hover { background: linear-gradient(135deg, var(--teal), var(--cyan)); color: #062033; }
+    select, .row button { color: var(--text); background-color: #0b2a3d; }
+    select option { color: var(--text); background: #0b2a3d; }
+    .ok { color: var(--ok); } .fail { color: var(--bad); }
+    pre { color: #c5edf6; background: rgba(3, 19, 31, .72); border-color: var(--line); }
+    table.grid th, table.grid td { border-bottom-color: var(--line); }
+    table.grid th { color: var(--cyan); }
+    @media (max-width: 860px) {
+      .top { padding: 12px 15px; }
+      .ecg { display: none; }
+      .wrap { grid-template-columns: 1fr; height: auto; }
+      .side { max-height: 220px; }
+    }
+    .chart-card { margin: 10px 0 14px; padding: 12px 14px 10px; border: 1px solid rgba(75,181,220,.28); border-radius: 11px; background: linear-gradient(145deg, rgba(7,36,54,.9), rgba(6,24,38,.78)); box-shadow: inset 0 1px rgba(163,239,255,.06), 0 10px 25px rgba(0,0,0,.14); }
+    .chart-title { color: #dffaff; font-size: 13px; font-weight: 650; letter-spacing: .04em; margin-bottom: 7px; }
+    .chart-subtitle { color: var(--muted); font-size: 10px; letter-spacing: .08em; margin-bottom: 5px; }
+    .chart-svg { display:block; width:100%; height:auto; min-height:190px; }
+    .chart-legend { display:flex; flex-wrap:wrap; gap:8px 14px; padding:3px 0 0 42px; color:#a8d0dc; font-size:11px; }
+    .chart-legend span { display:inline-flex; align-items:center; gap:5px; }
+    .chart-legend i { width:8px; height:8px; display:inline-block; border-radius:2px; box-shadow:0 0 7px currentColor; }
+    .chart-download { float:right; color:var(--cyan); background:transparent; border:0; cursor:pointer; font-size:10px; padding:0; }
+    .chart-download:hover { color:#fff; }
+    .map-card { position:relative; margin:10px 0 14px; padding:13px 14px 12px; overflow:hidden; border:1px solid rgba(67,240,207,.34); border-radius:11px; background:linear-gradient(145deg,rgba(6,33,49,.96),rgba(5,22,36,.9)); box-shadow:inset 0 1px rgba(163,239,255,.07),0 10px 28px rgba(0,0,0,.18); }
+    .map-card::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,transparent 49.8%,rgba(125,234,255,.035) 50%,transparent 50.2%),linear-gradient(transparent 49.8%,rgba(125,234,255,.035) 50%,transparent 50.2%); background-size:24px 24px; }
+    .map-head { position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:8px; }
+    .map-kicker { color:var(--teal); font-size:9px; letter-spacing:.16em; margin-bottom:3px; }
+    .map-title { color:#e5fbff; font-size:14px; font-weight:700; }
+    .map-floor { flex:0 0 auto; color:#062033; background:var(--teal); border-radius:6px; padding:4px 9px; font-size:11px; font-weight:800; box-shadow:0 0 14px rgba(67,240,207,.3); }
+    .map-svg { position:relative; display:block; width:100%; height:auto; min-height:220px; }
+    .map-meta { position:relative; display:flex; flex-wrap:wrap; gap:6px; margin-top:7px; }
+    .map-meta span { color:#a8d5df; background:rgba(17,69,89,.42); border:1px solid rgba(125,234,255,.16); border-radius:99px; padding:3px 8px; font-size:10px; }
+    .map-meta b { color:#eaffff; font-weight:650; }
+    .map-floor-panel + .map-floor-panel { margin-top:12px; padding-top:12px; border-top:1px solid rgba(125,234,255,.14); }
+    .map-floor-label { position:relative; color:var(--cyan); font-size:10px; font-weight:750; letter-spacing:.12em; margin:0 0 2px; }
+    .map-list { position:relative; margin-top:8px; border-top:1px solid rgba(125,234,255,.12); padding-top:7px; }
+    .map-list summary { color:#a8d5df; font-size:11px; cursor:pointer; }
+    .map-list-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:6px; margin-top:7px; }
+    .map-list-item { color:#9cc7d2; background:rgba(17,69,89,.32); border-radius:6px; padding:5px 7px; font-size:10px; }
+    .map-list-item b { color:#eaffff; }
+    .map-pulse { transform-box:fill-box; transform-origin:center; animation:mapPulse 1.8s ease-out infinite; }
+    @keyframes mapPulse { 0% { transform:scale(.45); opacity:1; } 80%,100% { transform:scale(2.2); opacity:0; } }
+    .tool-trace { display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin:0 0 9px; padding:7px 9px; border:1px solid rgba(75,181,220,.18); border-radius:8px; background:rgba(3,19,31,.38); }
+    .tool-trace-label { color:#6f9caf; font-size:10px; letter-spacing:.1em; margin-right:3px; }
+    .tool-chip { display:inline-flex; align-items:center; gap:5px; padding:3px 7px; border:1px solid rgba(67,240,207,.24); border-radius:99px; color:#a9e5ee; background:rgba(20,88,104,.24); font-size:10px; }
+    .tool-chip i { width:5px; height:5px; border-radius:50%; background:var(--warn); box-shadow:0 0 7px var(--warn); }
+    .tool-chip.done { color:var(--teal); border-color:rgba(67,240,207,.3); }
+    .tool-chip.done i { background:var(--teal); box-shadow:0 0 7px var(--teal); }
+    .tool-monitor { display:flex; align-items:center; gap:7px; min-height:30px; margin:0 0 9px; padding:5px 9px; border:1px solid rgba(75,181,220,.2); border-radius:8px; background:rgba(3,19,31,.32); }
+    .tool-monitor-label { color:var(--cyan); font-size:10px; letter-spacing:.1em; white-space:nowrap; }
+    .tool-monitor-empty { color:var(--muted); font-size:10px; }
+    .tool-monitor .tool-trace { flex:1; margin:0; padding:0; border:0; background:transparent; }
+    body[data-theme="clinical"] .tool-monitor { background:rgba(232,245,246,.7); }
+    body[data-theme="clinical"] .tool-monitor-label { color:var(--navy); }
+    .theme-picker { width:auto; min-width:94px; padding:5px 8px; border:1px solid var(--line); border-radius:99px; color:#bdebf6; background:rgba(18,68,91,.52); font-size:11px; cursor:pointer; }
+    .theme-picker:focus { outline:none; border-color:var(--cyan); }
+
+    /* 主题一：清透医疗，适合日常办公和白天使用 */
+    body[data-theme="clinical"] {
+      --bg:#eaf3f5; --paper:rgba(255,255,255,.95); --paper-2:#fff; --navy:#0b4961;
+      --blue:#087ea4; --teal:#0b9d88; --cyan:#087ea4; --line:rgba(20,91,112,.18); --line-strong:rgba(20,126,151,.4);
+      --text:#183844; --muted:#68808a; --ok:#0b9d75; --bad:#d84e60; --warn:#b87513; --chip:#e8f5f6;
+      color:var(--text); background-color:var(--bg);
+      background-image:linear-gradient(rgba(21,104,126,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(21,104,126,.045) 1px, transparent 1px),linear-gradient(180deg,#f6fbfc,#eaf3f5);
+      background-size:32px 32px,32px 32px,auto;
+    }
+    body[data-theme="clinical"] .top { background:rgba(255,255,255,.92); color:var(--text); box-shadow:0 5px 22px rgba(20,91,112,.12); }
+    body[data-theme="clinical"] .brand h1 { color:var(--navy); text-shadow:none; }
+    body[data-theme="clinical"] .brand p { color:var(--blue); }
+    body[data-theme="clinical"] .pill { color:var(--navy); background:#eff8fa; border-color:var(--line); }
+    body[data-theme="clinical"] .pill.ok { color:#fff; background:var(--ok); }
+    body[data-theme="clinical"] .theme-picker { color:var(--navy); background:#eef8fa; }
+    body[data-theme="clinical"] .side, body[data-theme="clinical"] .stage { background:rgba(255,255,255,.92); box-shadow:0 12px 30px rgba(20,91,112,.1), inset 0 1px #fff; }
+    body[data-theme="clinical"] #log { background:linear-gradient(180deg,#f7fbfc,#fff); }
+    body[data-theme="clinical"] .side-actions button, body[data-theme="clinical"] .chips button, body[data-theme="clinical"] select, body[data-theme="clinical"] .row button { color:var(--navy); background:#eff8fa; }
+    body[data-theme="clinical"] .tabs button { color:var(--muted); }
+    body[data-theme="clinical"] .tabs button.on { color:#fff; background:linear-gradient(135deg,var(--navy),var(--blue)); }
+    body[data-theme="clinical"] .hitem { background:var(--hist-bg-light,#fbfeff); border-color:color-mix(in srgb,var(--hist-accent,var(--blue)) 38%,transparent); border-left-color:var(--hist-accent,var(--blue)); }
+    body[data-theme="clinical"] .hitem:hover, body[data-theme="clinical"] .hitem.on { background:var(--hist-bg-light-active,#eef8fa); border-color:var(--hist-accent,var(--blue)); }
+    body[data-theme="clinical"] .hitem .t { color:var(--hist-accent,var(--navy)); text-shadow:none; }
+    body[data-theme="clinical"] .msg.user .bubble { background:linear-gradient(135deg,#087ea4,#0b4961); }
+    body[data-theme="clinical"] .msg.bot .bubble { color:var(--text); background:#fff; }
+    body[data-theme="clinical"] .composer input { color:var(--text); background:#fff; }
+    body[data-theme="clinical"] .msg .body th { color:var(--navy); background:#e7f3f6; }
+    body[data-theme="clinical"] .msg .body tr:nth-child(even) td { background:#f6fbfc; }
+    body[data-theme="clinical"] pre { color:var(--text); background:#f4fafb; }
+
+    /* 主题二：指挥中心，适合大屏和夜间值班 */
+    body[data-theme="command"] {
+      --bg:#0b0d24; --paper:rgba(18,20,51,.9); --paper-2:#17193e; --navy:#121333;
+      --blue:#8878ff; --teal:#50e3c2; --cyan:#a999ff; --line:rgba(145,130,255,.25); --line-strong:rgba(169,153,255,.58);
+      --text:#f0efff; --muted:#9898bd; --ok:#50e3c2; --bad:#ff718e; --warn:#ffc66b; --chip:rgba(78,68,145,.32);
+      background-color:var(--bg); background-image:linear-gradient(rgba(137,120,255,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(137,120,255,.045) 1px, transparent 1px),radial-gradient(800px 500px at 85% 0%,rgba(104,82,255,.2),transparent 65%),linear-gradient(180deg,#121333,#0b0d24); background-size:32px 32px,32px 32px,auto,auto;
+    }
+    body[data-theme="command"] .top { background:rgba(13,14,42,.92); }
+    body[data-theme="command"] .brand h1 { color:#fff; }
+    body[data-theme="command"] .brand p { color:var(--cyan); }
+    body[data-theme="command"] .cross { box-shadow:0 0 0 1px var(--cyan),0 0 25px rgba(169,153,255,.5); }
+    body[data-theme="command"] .side, body[data-theme="command"] .stage { background:linear-gradient(145deg,rgba(25,27,63,.95),rgba(12,14,38,.95)); }
+    body[data-theme="command"] .msg.user .bubble { background:linear-gradient(135deg,#6254d9,#342e88); }
+    body[data-theme="command"] .tabs button.on { color:#fff; background:linear-gradient(135deg,#6559d9,#3a347f); }
+    body[data-theme="command"] .composer input { background:rgba(8,9,29,.8); }
+
+    /* 主题三：生命青绿，突出护理、设备和实时状态 */
+    body[data-theme="mint"] {
+      --bg:#061b1a; --paper:rgba(8,36,34,.9); --paper-2:#0d403d; --navy:#082927;
+      --blue:#36c9c1; --teal:#68e7ae; --cyan:#8bf5d1; --line:rgba(86,221,181,.23); --line-strong:rgba(104,231,174,.54);
+      --text:#e5fff5; --muted:#7eafa1; --ok:#68e7ae; --bad:#ff7182; --warn:#f7c96b; --chip:rgba(21,105,90,.33);
+      background-color:var(--bg); background-image:linear-gradient(rgba(76,215,171,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(76,215,171,.045) 1px,transparent 1px),radial-gradient(850px 500px at 0% 0%,rgba(19,147,126,.2),transparent 65%),linear-gradient(180deg,#092d2a,#061b1a); background-size:32px 32px,32px 32px,auto,auto;
+    }
+    body[data-theme="mint"] .top { background:rgba(5,26,25,.92); }
+    body[data-theme="mint"] .brand p { color:var(--cyan); }
+    body[data-theme="mint"] .side, body[data-theme="mint"] .stage { background:linear-gradient(145deg,rgba(12,58,53,.94),rgba(6,29,28,.94)); }
+    body[data-theme="mint"] .msg.user .bubble { background:linear-gradient(135deg,#128d82,#126653); }
+    body[data-theme="mint"] .tabs button.on { color:#06251f; background:linear-gradient(135deg,var(--teal),var(--cyan)); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="cross" aria-hidden="true"></div>
+      <div>
+        <h1>市一医院 · 急诊智能查询</h1>
+        <p>EMERGENCY INTELLIGENCE CONSOLE · RFID / FLOW / ASSET</p>
+      </div>
+    </div>
+    <svg class="ecg" viewBox="0 0 180 28" fill="none" aria-hidden="true">
+      <path d="M0 16 H28 L34 16 L40 4 L48 24 L56 16 H86 L92 16 L98 8 L108 22 L116 16 H180" stroke="#7fe0d2" stroke-width="2"/>
+    </svg>
+    <div class="meta">
+      <span class="pill ok">系统在线</span>
+      <span class="pill" id="clock"></span>
+      <select class="theme-picker" id="themePicker" onchange="applyTheme(this.value)" aria-label="选择界面风格">
+        <option value="cyber">深海科技</option>
+        <option value="clinical">清透医疗</option>
+        <option value="command">指挥中心</option>
+        <option value="mint">生命青绿</option>
+      </select>
+    </div>
+  </header>
+  <div class="wrap">
+    <aside class="side">
+      <h2>历史查询记录</h2>
+      <div class="side-actions">
+        <button onclick="newChat()">新建会话</button>
+        <button onclick="clearHist()">清空</button>
+      </div>
+      <div id="hist"></div>
+    </aside>
+    <section class="stage">
+      <div class="tabs">
+        <button id="tab-chat" class="on" onclick="show('chat')">智能问询</button>
+        <button id="tab-kb" onclick="show('kb')">国家文件知识库</button>
+        <button id="tab-test" onclick="show('test')">Skill 测试</button>
+      </div>
+      <section id="chat" class="panel on">
+        <div id="toolMonitor" class="tool-monitor"><span class="tool-monitor-label">工具调用监视</span><span class="tool-monitor-empty">等待提问</span></div>
+        <div id="log"></div>
+        <div class="chips">
+          <button onclick="ask('张三现在在哪个区域，绿通走了多久？')">张三在哪</button>
+          <button onclick="ask('今天谁在抢救室待太久了？')">抢救室超时</button>
+          <button onclick="ask('现在CT室有哪些患者？')">CT室在场</button>
+          <button onclick="ask('今天胸痛绿通有几人，都在哪？')">胸痛绿通</button>
+          <button onclick="ask('各区域平均停留多久，瓶颈在哪？')">区域瓶颈</button>
+          <button onclick="ask('输液泵12号现在在哪？')">输液泵在哪</button>
+          <button onclick="ask('在地图上显示张三现在的位置')">张三位置图</button>
+          <button onclick="ask('在地图上显示所有患者的实时位置')">患者分布图</button>
+          <button onclick="ask('用平面图显示输液泵12号的位置')">设备位置图</button>
+          <button onclick="ask('在地图上显示所有设备的实时位置')">设备分布图</button>
+          <button onclick="ask('哪些设备离线或低电或越界了？')">设备报警</button>
+          <button onclick="ask('输液泵12号今天的移动轨迹')">设备轨迹</button>
+          <button onclick="ask('移动DR最近去过哪些地方？')">移动DR轨迹</button>
+        </div>
+        <form class="composer" onsubmit="send(event)">
+          <input id="q" type="text" placeholder="请输入患者姓名、门诊号或设备名称，例如：张三现在在哪？" autocomplete="off" />
+          <button class="go" type="submit">发送</button>
+        </form>
+      </section>
+      <section id="kb" class="panel">
+        <div class="kb-head">
+          <input id="kbQuery" type="search" placeholder="检索文件、文号或管理要点，例如：急诊绿色通道、设备维护台账" onkeydown="if(event.key==='Enter') loadKnowledge()" />
+          <select id="kbCategory" onchange="loadKnowledge()">
+            <option value="">全部类别</option>
+            <option value="emergency">医疗急诊</option>
+            <option value="asset">资产管理</option>
+          </select>
+          <button class="go" onclick="loadKnowledge()">检索</button>
+        </div>
+        <p class="kb-note" id="kbSummary">收录医疗急诊与资产管理国家级现行文件；摘要仅供管理参考，请以官方原文为准。</p>
+        <div id="kbResults" class="kb-results"><div class="empty">正在载入知识库…</div></div>
+      </section>
+      <section id="test" class="panel">
+        <div class="row">
+          <select id="skill">
+            <option value="">全部 Skill</option>
+            <option value="search_policy_knowledge">search_policy_knowledge · 国家政策知识库</option>
+            <option value="show_location_map">show_location_map · 院内位置图</option>
+            <option value="list_patients">list_patients · 患者名录</option>
+            <option value="list_patients_in_area">list_patients_in_area · 区域在场</option>
+            <option value="list_patients_by_channel">list_patients_by_channel · 通道名录</option>
+            <option value="summarize_channels">summarize_channels · 通道汇总</option>
+            <option value="get_inout_records">get_inout_records · 进出记录</option>
+            <option value="analyze_patient_journey">analyze_patient_journey · 轨迹分析</option>
+            <option value="find_timeout_patients">find_timeout_patients · 超时预警</option>
+            <option value="summarize_area_stay">summarize_area_stay · 区域统计</option>
+            <option value="list_assets">list_assets · 设备列表</option>
+            <option value="locate_asset">locate_asset · 设备定位</option>
+            <option value="list_asset_alarms">list_asset_alarms · 设备报警</option>
+            <option value="analyze_energy">analyze_energy · 能效分析</option>
+            <option value="get_asset_power">get_asset_power · 耗电统计</option>
+            <option value="get_asset_track">get_asset_track · 设备轨迹</option>
+            <option value="e2e_chat">e2e_chat · 对话端到端</option>
+          </select>
+          <label><input id="e2e" type="checkbox" /> 含大模型端到端</label>
+          <button class="go" onclick="runTests()">运行测试</button>
+        </div>
+        <p id="sum"></p>
+        <table class="grid">
+          <thead><tr><th>结果</th><th>Skill</th><th>用例</th><th>ms</th><th>调用</th><th>说明</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <pre id="detail"></pre>
+      </section>
+    </section>
+  </div>
+  <script>
+    const HS_KEY = "emg-agent-history-v1";
+    const THEME_KEY = "emg-agent-theme-v1";
+    const COLS = {
+      patientName: "姓名", name: "姓名", hospitalNo: "门诊号", channel: "通道",
+      currentLocation: "当前区域", area: "区域", areaName: "区域", minutes: "分钟",
+      avgMinutes: "平均(分)", maxMinutes: "最长(分)", patients: "人数", createTime: "时间",
+      since: "进入时间", firstTime: "首次", lastTime: "最近", node: "节点",
+      action: "动作", gate: "出入口", time: "时间", totalMinutes: "总时长(分)",
+      eventCount: "事件数", floor: "楼层", position: "位置", online: "在线", alarm: "报警"
+    };
+    const HIDE = new Set(["epc", "wristbandEpc", "day", "relatedEpc", "type", "type2", "ok", "importName", "importName2", "id", "sn"]);
+    const log = document.getElementById("log");
+    let sid = "web-" + Math.random().toString(36).slice(2);
+    let currentId = sid;
+    let chats = [];
+
+    function nowLabel() {
+      return new Date().toLocaleString("zh-CN", { hour12: false }).replace(/\//g, "-");
+    }
+    function tick() {
+      document.getElementById("clock").textContent = nowLabel();
+    }
+    tick(); setInterval(tick, 1000);
+
+    function applyTheme(theme) {
+      const allowed = new Set(["cyber", "clinical", "command", "mint"]);
+      if (!allowed.has(theme)) theme = "cyber";
+      document.body.dataset.theme = theme;
+      localStorage.setItem(THEME_KEY, theme);
+      const picker = document.getElementById("themePicker");
+      if (picker) picker.value = theme;
+    }
+    applyTheme(localStorage.getItem(THEME_KEY) || "cyber");
+
+    function domainOf(text) {
+      return /泵|呼吸机|监护|DR|设备|耗电|越界|轨迹|定位|能效/.test(text) ? "asset" : "green";
+    }
+    function loadChats() {
+      try { return JSON.parse(localStorage.getItem(HS_KEY) || "[]"); } catch (e) { return []; }
+    }
+    function saveChats() { localStorage.setItem(HS_KEY, JSON.stringify(chats.slice(0, 40))); }
+    function seed() {
+      const t = Date.now();
+      return [
+        {
+          id: "seed-1", title: "张三绿通轨迹", domain: "green", updated: t - 3600e3,
+          messages: [
+            { role: "user", text: "张三现在在哪个区域，绿通走了多久？" },
+            { role: "bot", text: "张三（MZ20260608001，胸痛绿通）当前在**介入室**。\n\n| 区域 | 分钟 |\n| --- | --- |\n| 分诊台 | 4 |\n| 抢救室 | 37 |\n| CT室 | 12 |\n| 介入室 | 进行中 |" }
+          ]
+        },
+        {
+          id: "seed-2", title: "抢救室超时名单", domain: "green", updated: t - 1800e3,
+          messages: [
+            { role: "user", text: "今天谁在抢救室待太久了？" },
+            { role: "bot", text: "当前抢救室超时患者 4 人（阈值 120 分钟）。\n\n| 姓名 | 门诊号 | 已停留(分) |\n| --- | --- | --- |\n| 黄德 | MZ20260608017 | 325 |\n| 刘洋 | MZ20260608018 | 257 |\n| 王五 | MZ20260608003 | 250 |" }
+          ]
+        },
+        {
+          id: "seed-3", title: "输液泵12号轨迹", domain: "asset", updated: t - 900e3,
+          messages: [
+            { role: "user", text: "输液泵12号今天的移动轨迹" },
+            { role: "bot", text: "输液泵12号（YP-012）高频位置为抢救1床，当前在抢救室。\n\n| 区域 | 停留(分) |\n| --- | --- |\n| 抢救室设备带 | 50 |\n| 抢救1床 | 115 |\n| CT室 | 35 |\n| 抢救室 | 进行中 |" }
+          ]
+        }
+      ];
+    }
+
+    function renderHist() {
+      const box = document.getElementById("hist");
+      if (!chats.length) { box.innerHTML = '<div class="empty">暂无历史</div>'; return; }
+      box.innerHTML = chats.map(c => {
+        const d = new Date(c.updated);
+        const time = d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+        const tag = c.domain === "asset" ? "资产" : "绿通";
+        const cls = c.domain === "asset" ? "asset" : "green";
+        const on = c.id === currentId ? " on" : "";
+        const palette = historyColor(c.id);
+        const style = `--hist-accent:${palette.accent};--hist-bg:${palette.dark};--hist-bg-active:${palette.darkActive};--hist-bg-light:${palette.light};--hist-bg-light-active:${palette.lightActive}`;
+        return '<div class="hitem' + on + '" style="' + style + '" onclick="openChat(\'' + c.id + '\')">'
+          + '<div class="hitem-head"><div class="t">' + escapeHtml(c.title) + '</div><div class="hactions">'
+          + '<button class="hact" title="重命名" aria-label="重命名会话" onclick="renameChat(event,\'' + c.id + '\')">✎</button>'
+          + '<button class="hact delete" title="删除" aria-label="删除会话" onclick="deleteChat(event,\'' + c.id + '\')">×</button></div></div>'
+          + '<div class="s"><span>' + time + '</span><span class="tag ' + cls + '">' + tag + "</span></div></div>";
+      }).join("");
+    }
+    function historyColor(id) {
+      const palette = [
+        ["#35f2c6","rgba(16,105,87,.46)","rgba(20,137,112,.64)","#ddf8f1","#c4f1e5"],
+        ["#29bfff","rgba(12,83,130,.48)","rgba(16,108,169,.66)","#dff3fc","#c6e9f9"],
+        ["#ffd05c","rgba(119,76,8,.46)","rgba(153,99,10,.64)","#fff2cf","#ffe5a8"],
+        ["#ff647f","rgba(124,27,53,.46)","rgba(158,34,68,.64)","#ffe1e7","#ffcbd6"],
+        ["#ad91ff","rgba(71,46,139,.48)","rgba(91,58,178,.66)","#eee7ff","#dfd2ff"],
+        ["#53d8ff","rgba(10,91,119,.46)","rgba(13,118,154,.64)","#ddf6fd","#c3ecf8"],
+        ["#8ee85e","rgba(52,105,25,.46)","rgba(68,137,32,.64)","#e6f8dc","#d2f1c1"],
+        ["#ff9b55","rgba(127,60,13,.46)","rgba(161,76,16,.64)","#ffeadb","#ffd7bd"]
+      ];
+      let hash = 0;
+      for (const ch of String(id || "")) hash = ((hash << 5) - hash + ch.charCodeAt(0)) | 0;
+      const row = palette[Math.abs(hash) % palette.length];
+      return { accent:row[0], dark:row[1], darkActive:row[2], light:row[3], lightActive:row[4] };
+    }
+    const chartStore = [];
+    const CHART_COLORS = ["#43f0cf", "#28b9ff", "#ffca68", "#ff6b82", "#9d8cff", "#7deaff"];
+    function chartValue(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function chartText(value) { return escapeHtml(String(value == null ? "" : value)); }
+    function chartPoint(cx, cy, radius, angle) {
+      return [cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)];
+    }
+    function piePath(cx, cy, radius, start, end) {
+      const a = chartPoint(cx, cy, radius, start), b = chartPoint(cx, cy, radius, end);
+      const large = end - start > Math.PI ? 1 : 0;
+      return `M ${cx} ${cy} L ${a[0].toFixed(2)} ${a[1].toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${b[0].toFixed(2)} ${b[1].toFixed(2)} Z`;
+    }
+    function renderChart(spec) {
+      if (!spec || !["bar", "pie", "line"].includes(spec.type)) return "";
+      const id = "chart-" + chartStore.length;
+      chartStore.push(spec);
+      const title = chartText(spec.title || "数据统计");
+      const unit = chartText(spec.unit || "");
+      let svg = "", legend = "";
+      if (spec.type === "pie") {
+        const data = (spec.data || []).map(x => ({ name: x.name, value: chartValue(x.value) })).filter(x => x.value >= 0);
+        const total = data.reduce((sum, x) => sum + x.value, 0) || 1;
+        let angle = -Math.PI / 2;
+        const paths = data.map((item, i) => {
+          const end = angle + (item.value / total) * Math.PI * 2;
+          const color = CHART_COLORS[i % CHART_COLORS.length];
+          const path = `<path d="${piePath(170, 135, 91, angle, end)}" fill="${color}" opacity=".9" stroke="#082033" stroke-width="2"><title>${chartText(item.name)}：${item.value}${unit}</title></path>`;
+          angle = end; return path;
+        }).join("");
+        const center = `<circle cx="170" cy="135" r="54" fill="#092638" stroke="rgba(125,234,255,.25)" stroke-width="1"/><text x="170" y="132" text-anchor="middle" fill="#dffaff" font-size="18" font-weight="700">${data.length}</text><text x="170" y="149" text-anchor="middle" fill="#7fa6b9" font-size="9">类别</text>`;
+        svg = `<svg class="chart-svg" viewBox="0 0 720 270" role="img" aria-label="${title}"><g>${paths}${center}</g></svg>`;
+        legend = data.map((item, i) => `<span><i style="color:${CHART_COLORS[i % CHART_COLORS.length]};background:${CHART_COLORS[i % CHART_COLORS.length]}"></i>${chartText(item.name)} ${((item.value / total) * 100).toFixed(1)}%</span>`).join("");
+      } else {
+        const categories = spec.categories || [];
+        const series = spec.series || [];
+        const width = 760, height = 300, left = 54, right = 18, top = 25, bottom = 54;
+        const plotW = width - left - right, plotH = height - top - bottom;
+        const max = Math.max(1, ...series.flatMap(s => (s.data || []).map(chartValue)));
+        const grid = Array.from({ length: 5 }, (_, i) => {
+          const value = max * (4 - i) / 4, y = top + plotH * i / 4;
+          return `<line x1="${left}" y1="${y}" x2="${width-right}" y2="${y}" stroke="rgba(125,234,255,.13)"/><text x="${left-9}" y="${y+3}" text-anchor="end" fill="#7fa6b9" font-size="9">${Number(value.toFixed(1))}${unit}</text>`;
+        }).join("");
+        const step = plotW / Math.max(categories.length, 1);
+        const count = Math.max(series.length, 1);
+        const barW = Math.max(5, Math.min(34, step * .64 / count));
+        const shapes = [];
+        series.forEach((item, si) => {
+          const color = CHART_COLORS[si % CHART_COLORS.length];
+          (item.data || []).forEach((raw, ci) => {
+            const value = chartValue(raw), h = plotH * value / max;
+            const x = left + step * ci + step / 2 - (count * barW) / 2 + si * barW;
+            const y = top + plotH - h;
+            if (spec.type === "line") {
+              const previous = ci > 0 ? chartValue(item.data[ci - 1]) : null;
+              if (previous !== null) {
+                const px = left + step * (ci - 1) + step / 2, py = top + plotH - plotH * previous / max;
+                shapes.push(`<line x1="${px}" y1="${py}" x2="${x + barW/2}" y2="${y}" stroke="${color}" stroke-width="3"/>`);
+              }
+              shapes.push(`<circle cx="${x + barW/2}" cy="${y}" r="4" fill="${color}" stroke="#071a2b" stroke-width="2"><title>${chartText(item.name)}：${value}${unit}</title></circle>`);
+            } else {
+              shapes.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(h, 1).toFixed(1)}" rx="3" fill="${color}" opacity=".88"><title>${chartText(item.name)} · ${chartText(categories[ci])}：${value}${unit}</title></rect>`);
+            }
+          });
+        });
+        const labels = categories.map((cat, i) => {
+          const x = left + step * i + step / 2;
+          return `<text x="${x}" y="${height-25}" text-anchor="middle" fill="#9bc2cf" font-size="10">${chartText(String(cat).slice(0, 10))}</text>`;
+        }).join("");
+        svg = `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g>${grid}<line x1="${left}" y1="${top+plotH}" x2="${width-right}" y2="${top+plotH}" stroke="rgba(125,234,255,.35)"/>${shapes.join("")}${labels}</g></svg>`;
+        legend = series.map((item, i) => `<span><i style="color:${CHART_COLORS[i % CHART_COLORS.length]};background:${CHART_COLORS[i % CHART_COLORS.length]}"></i>${chartText(item.name)}</span>`).join("");
+      }
+      return `<div class="chart-card"><button class="chart-download" onclick="downloadChart('${id}')">下载 PNG</button><div class="chart-subtitle">DATA VISUALIZATION / ${String(spec.type).toUpperCase()}</div><div class="chart-title">${title}</div>${svg}<div class="chart-legend">${legend}</div></div>`;
+    }
+    function renderCharts(charts) { return (charts || []).map(renderChart).join(""); }
+    function renderMap(spec) {
+      if (!spec || !Array.isArray(spec.areas)) return "";
+      const markers = Array.isArray(spec.markers) && spec.markers.length ? spec.markers : [{ name:spec.subject, identifier:spec.identifier, position:spec.position, floor:spec.floor, subjectType:spec.subjectType, status:spec.status }];
+      const floors = [...new Set(spec.areas.map(a => a.floor))].sort();
+      const panels = floors.map(floor => {
+        const areas = spec.areas.filter(a => a.floor === floor);
+        const floorMarkers = markers.filter(m => m.floor === floor);
+        const rooms = areas.map(a => {
+          const hits = floorMarkers.filter(m => String(m.position || "").includes(a.name) || String(a.name || "").includes(m.position));
+          const active = hits.length > 0;
+          const fill = active ? "rgba(67,240,207,.23)" : "rgba(20,74,96,.35)";
+          const stroke = active ? "#43f0cf" : "rgba(125,234,255,.28)";
+          const cx = (chartValue(a.x)+chartValue(a.w)/2)*7.2, cy = (chartValue(a.y)+chartValue(a.h)/2)*2.65;
+          const names = hits.map(m => m.name).join("、");
+          const shown = hits.slice(0, 2).map(m => String(m.name || "").slice(0, 11));
+          if (hits.length > 2) shown.push(`另 ${hits.length - 2} 个`);
+          const nameLines = shown.map((name, i) => `<tspan x="${cx}" dy="${i ? 12 : 0}">${chartText(name)}</tspan>`).join("");
+          const nameBlock = active ? `<text x="${cx}" y="${cy-9-(shown.length-1)*5}" text-anchor="middle" fill="#eaffff" font-size="10" font-weight="700">${nameLines}<title>${chartText(names)}</title></text>` : "";
+          const roomLabelY = cy + chartValue(a.h) * 1.03;
+          const bx = (chartValue(a.x)+chartValue(a.w))*7.2-11, by = chartValue(a.y)*2.65+11;
+          const badge = active ? `<g><circle class="map-pulse" cx="${bx}" cy="${by}" r="10" fill="none" stroke="#43f0cf" stroke-width="2"/><circle cx="${bx}" cy="${by}" r="9" fill="#43f0cf" stroke="#dffff8" stroke-width="1.5"/><text x="${bx}" y="${by+3.5}" text-anchor="middle" fill="#062033" font-size="8" font-weight="800">${hits.length}</text></g>` : "";
+          return `<g><rect x="${chartValue(a.x)*7.2}" y="${chartValue(a.y)*2.65}" width="${chartValue(a.w)*7.2}" height="${chartValue(a.h)*2.65}" rx="7" fill="${fill}" stroke="${stroke}" stroke-width="${active ? 2 : 1}"/>${nameBlock}<text x="${cx}" y="${roomLabelY}" text-anchor="middle" fill="${active ? '#43f0cf' : '#8fb9c8'}" font-size="${active ? 9 : 11}" font-weight="${active ? 700 : 500}">${chartText(a.name)}</text>${badge}</g>`;
+        }).join("");
+        return `<div class="map-floor-panel"><div class="map-floor-label">${chartText(floor)} · ${floorMarkers.length} 个定位对象</div><svg class="map-svg" viewBox="0 0 720 265" role="img" aria-label="${chartText(floor)}位置图"><path d="M 180 116 H 540 M 360 25 V 238" stroke="rgba(125,234,255,.11)" stroke-width="18" stroke-linecap="round"/>${rooms}</svg></div>`;
+      }).join("");
+      const list = markers.map(m => `<div class="map-list-item"><b>${chartText(m.name)}</b> · ${chartText(m.position)}<br>${chartText(m.identifier)} · ${chartText(m.status || '')}</div>`).join("");
+      const alarm = spec.alarm && spec.alarm !== "无报警" ? `<span>报警 <b>${chartText(spec.alarm)}</b></span>` : "";
+      return `<div class="map-card"><div class="map-head"><div><div class="map-kicker">RFID INDOOR POSITIONING / LIVE</div><div class="map-title">${chartText(spec.title || '院内实时位置')}</div></div><div class="map-floor">${chartText(spec.floor || '')}</div></div>${panels}<div class="map-meta"><span>${chartText(spec.subjectType)} <b>${chartText(spec.subject)}</b></span><span>范围 <b>${chartText(spec.position)}</b></span><span>状态 <b>${chartText(spec.status)}</b></span>${alarm}</div><details class="map-list" ${markers.length <= 6 ? 'open' : ''}><summary>查看定位名单（${markers.length}）</summary><div class="map-list-grid">${list}</div></details></div>`;
+    }
+    function renderMaps(maps) { return (maps || []).map(renderMap).join(""); }
+    function renderToolTrace(tools) {
+      if (!tools || !tools.length) return "";
+      return '<div class="tool-trace"><span class="tool-trace-label">调用工具</span>' + tools.map(t => `<span class="tool-chip ${t.phase === "done" ? "done" : ""}"><i></i>${chartText(t.label || t.name)}${t.phase === "done" ? " · 完成" : " · 调用中"}</span>`).join("") + "</div>";
+    }
+    function downloadChart(id) {
+      const spec = chartStore[Number(id.replace("chart-", ""))];
+      if (!spec) return;
+      const holder = document.createElement("div"); holder.innerHTML = renderChart(spec);
+      const svg = holder.querySelector("svg");
+      const source = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob), img = new Image();
+      img.onload = () => { const canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 470; const ctx = canvas.getContext("2d"); ctx.fillStyle = "#071a2b"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); URL.revokeObjectURL(url); const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = "medical-chart.png"; a.click(); };
+      img.src = url;
+    }
+
+    function renderLog(messages) {
+      log.innerHTML = "";
+      if (!messages || !messages.length) {
+        log.innerHTML = '<div class="empty">从左侧打开历史记录，或直接在下方提问。<br>数据来自绿通 RFID 与资产定位/能效接口。</div>';
+        return;
+      }
+      messages.forEach(m => {
+        if (m.role === "user") add("user", '<div class="who">值班询问</div><div class="bubble">' + escapeHtml(m.text) + "</div>");
+        else add("bot", '<div class="who">智能查询</div><div class="bubble">' + renderToolTrace(m.tools) + '<div class="body">' + renderMd(m.text) + renderCharts(m.charts) + renderMaps(m.maps) + "</div></div>");
+      });
+    }
+    function upsertChat(title, domain, messages) {
+      let c = chats.find(x => x.id === currentId);
+      if (!c) {
+        c = { id: currentId, title: title || "新会话", domain: domain || "green", updated: Date.now(), messages: [] };
+        chats.unshift(c);
+      }
+      c.title = title || c.title;
+      c.domain = domain || c.domain;
+      c.updated = Date.now();
+      c.messages = messages;
+      chats = [c].concat(chats.filter(x => x.id !== c.id));
+      saveChats();
+      renderHist();
+    }
+    function newChat() {
+      sid = "web-" + Math.random().toString(36).slice(2);
+      currentId = sid;
+      renderLog([]);
+      renderHist();
+      document.getElementById("q").focus();
+    }
+    function openChat(id) {
+      const c = chats.find(x => x.id === id);
+      if (!c) return;
+      currentId = c.id;
+      sid = c.id;
+      renderLog(c.messages);
+      renderHist();
+    }
+    function renameChat(event, id) {
+      event.stopPropagation();
+      const chat = chats.find(x => x.id === id);
+      if (!chat) return;
+      const next = prompt("重命名会话", chat.title || "");
+      if (next == null) return;
+      const title = next.trim().slice(0, 40);
+      if (!title) return;
+      chat.title = title;
+      saveChats();
+      renderHist();
+    }
+    function deleteChat(event, id) {
+      event.stopPropagation();
+      const chat = chats.find(x => x.id === id);
+      if (!chat || !confirm(`删除会话“${chat.title}”？此操作仅删除本机历史记录。`)) return;
+      chats = chats.filter(x => x.id !== id);
+      saveChats();
+      if (currentId === id) newChat();
+      else renderHist();
+    }
+    function clearHist() {
+      if (!confirm("清空本机历史查询记录？")) return;
+      chats = [];
+      saveChats();
+      newChat();
+      renderHist();
+    }
+    function show(name) {
+      ["chat", "kb", "test"].forEach(id => document.getElementById(id).classList.toggle("on", name === id));
+      ["chat", "kb", "test"].forEach(id => document.getElementById("tab-" + id).classList.toggle("on", name === id));
+      if (name === "kb") loadKnowledge();
+    }
+
+    async function loadKnowledge() {
+      const query = document.getElementById("kbQuery").value.trim();
+      const category = document.getElementById("kbCategory").value;
+      const params = new URLSearchParams({ query, category, limit: "50" });
+      const box = document.getElementById("kbResults");
+      box.innerHTML = '<div class="empty">正在检索国家文件…</div>';
+      try {
+        const res = await fetch("/api/knowledge?" + params.toString());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const payload = await res.json();
+        const stats = payload.stats || {};
+        document.getElementById("kbSummary").textContent = `共收录 ${stats.total || 0} 份国家级现行文件（医疗急诊 ${stats.emergency || 0}，资产管理 ${stats.asset || 0}），更新至 ${payload.as_of || "--"}；当前显示 ${payload.count || 0} 份。摘要仅供管理参考，请以官方原文为准。`;
+        const rows = payload.data || [];
+        if (!rows.length) { box.innerHTML = '<div class="empty">没有找到匹配文件，请更换关键词。</div>'; return; }
+        box.innerHTML = rows.map(doc => {
+          const categoryLabel = doc.category === "emergency" ? "医疗急诊" : "资产管理";
+          const points = (doc.key_points || []).slice(0, 4).map(point => `<li>${escapeHtml(point)}</li>`).join("");
+          return `<article class="kb-card ${doc.category === "asset" ? "asset" : ""}">`
+            + `<h3>${escapeHtml(doc.title)}</h3>`
+            + `<div class="kb-meta"><span class="tag ${doc.category === "asset" ? "asset" : "green"}">${categoryLabel}</span> · ${escapeHtml(doc.document_no || "无文号")}<br>${escapeHtml(doc.issuer)} · 发布 ${escapeHtml(doc.issued_at)} · ${escapeHtml(doc.status)}</div>`
+            + `<p>${escapeHtml(doc.summary)}</p><ul>${points}</ul>`
+            + `<a href="${escapeHtml(doc.source_url)}" target="_blank" rel="noopener noreferrer">查看官方原文 ↗</a></article>`;
+        }).join("");
+      } catch (error) {
+        box.innerHTML = `<div class="empty fail">知识库载入失败：${escapeHtml(error.message)}</div>`;
+      }
+    }
+    function add(cls, html) {
+      const el = document.createElement("div");
+      el.className = "msg " + cls;
+      el.innerHTML = html;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    }
+    function send(e) { e.preventDefault(); ask(document.getElementById("q").value); }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+    }
+    function cell(v) {
+      if (v == null) return "";
+      if (typeof v === "object") return escapeHtml(JSON.stringify(v));
+      return escapeHtml(String(v));
+    }
+    function rowsToTable(rows) {
+      if (!rows.length) return '<p class="kpi">无数据</p>';
+      if (typeof rows[0] !== "object" || rows[0] === null) {
+        return "<ul>" + rows.map(r => "<li>" + escapeHtml(String(r)) + "</li>").join("") + "</ul>";
+      }
+      const keys = [];
+      rows.forEach(r => Object.keys(r || {}).forEach(k => {
+        if (!HIDE.has(k) && !keys.includes(k)) keys.push(k);
+      }));
+      const prefer = ["patientName","name","hospitalNo","channel","currentLocation","area","minutes","avgMinutes","maxMinutes","patients","time","action","node","createTime","since","floor","position","online","alarm"];
+      keys.sort((a,b) => (prefer.indexOf(a) < 0 ? 99 : prefer.indexOf(a)) - (prefer.indexOf(b) < 0 ? 99 : prefer.indexOf(b)));
+      let html = "<table><thead><tr>" + keys.map(k => "<th>" + (COLS[k] || k) + "</th>").join("") + "</tr></thead><tbody>";
+      rows.forEach(r => { html += "<tr>" + keys.map(k => "<td>" + cell(r[k]) + "</td>").join("") + "</tr>"; });
+      return html + "</tbody></table>";
+    }
+    function jsonToHtml(obj) {
+      if (Array.isArray(obj)) return rowsToTable(obj);
+      if (obj && Array.isArray(obj.data)) {
+        const n = obj.count != null ? obj.count : obj.data.length;
+        const extra = obj.area ? " · " + obj.area : (obj.channel ? " · " + obj.channel : "");
+        return '<p class="kpi">共 ' + n + " 条" + extra + "</p>" + rowsToTable(obj.data);
+      }
+      if (obj && Array.isArray(obj.stays)) {
+        let html = '<p class="kpi">' + escapeHtml((obj.device && obj.device.name) || "") + " · 高频位置 "
+          + escapeHtml(obj.highFreqPosition || "") + " · 当前 " + escapeHtml(obj.lastPosition || "") + "</p>";
+        html += "<p>停留轨迹</p>" + rowsToTable(obj.stays);
+        if (obj.moves && obj.moves.length) html += "<p>离开存放位置</p>" + rowsToTable(obj.moves);
+        return html;
+      }
+      if (obj && Array.isArray(obj.steps)) {
+        let html = '<p class="kpi"><b>' + escapeHtml(obj.patientName || "") + "</b> "
+          + escapeHtml(obj.hospitalNo || "") + " · " + escapeHtml(obj.channel || "")
+          + " · 当前 <b>" + escapeHtml(obj.currentLocation || "") + "</b></p>";
+        if (obj.stays) html += "<p>各区域停留</p>" + rowsToTable(obj.stays);
+        html += "<p>流转轨迹</p>" + rowsToTable(obj.steps);
+        return html;
+      }
+      if (obj && obj.locations && typeof obj.locations === "object") {
+        const locRows = Object.keys(obj.locations).map(k => ({ area: k, patients: obj.locations[k] }));
+        return rowsToTable([{ channel: obj.channel, patients: obj.patients }]) + rowsToTable(locRows);
+      }
+      const rows = [];
+      Object.keys(obj || {}).forEach(k => {
+        if (!HIDE.has(k) && typeof obj[k] !== "object") rows.push({ 字段: COLS[k] || k, 值: obj[k] });
+      });
+      return rows.length ? rowsToTable(rows) : "<pre>" + escapeHtml(JSON.stringify(obj, null, 2)) + "</pre>";
+    }
+    function isTableSep(line) {
+      return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+    }
+    function splitRow(line) {
+      return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(s => s.trim());
+    }
+    function renderMd(src) {
+      const t = (src || "").trim();
+      if ((t.startsWith("{") || t.startsWith("["))) {
+        try { return jsonToHtml(JSON.parse(t)); } catch (e) {}
+      }
+      const lines = String(src || "").replace(/\r\n/g, "\n").split("\n");
+      let html = "", i = 0, para = [];
+      const flush = () => { if (!para.length) return; html += "<p>" + para.join("<br>") + "</p>"; para = []; };
+      while (i < lines.length) {
+        const line = lines[i];
+        if (line.includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+          flush();
+          const head = splitRow(line); i += 2;
+          const body = [];
+          while (i < lines.length && lines[i].includes("|") && !isTableSep(lines[i])) { body.push(splitRow(lines[i])); i += 1; }
+          html += "<table><thead><tr>" + head.map(c => "<th>" + escapeHtml(c) + "</th>").join("") + "</tr></thead><tbody>";
+          body.forEach(r => { html += "<tr>" + head.map((_, idx) => "<td>" + escapeHtml(r[idx] || "") + "</td>").join("") + "</tr>"; });
+          html += "</tbody></table>";
+          continue;
+        }
+        if (/^\s*$/.test(line)) { flush(); i += 1; continue; }
+        if (/^###?\s+/.test(line)) { flush(); html += "<h3>" + inline(line.replace(/^#+\s+/, "")) + "</h3>"; i += 1; continue; }
+        if (/^[-*]\s+/.test(line)) {
+          flush(); html += "<ul>";
+          while (i < lines.length && /^[-*]\s+/.test(lines[i])) { html += "<li>" + inline(lines[i].replace(/^[-*]\s+/, "")) + "</li>"; i += 1; }
+          html += "</ul>"; continue;
+        }
+        para.push(inline(line)); i += 1;
+      }
+      flush();
+      return html || "<p></p>";
+    }
+    function inline(s) {
+      return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
+    }
+    async function ask(text) {
+      text = (text || "").trim();
+      if (!text) return;
+      document.getElementById("q").value = "";
+      if (!log.querySelector(".msg")) log.innerHTML = "";
+      add("user", '<div class="who">值班询问</div><div class="bubble">' + escapeHtml(text) + "</div>");
+      const bot = add("bot", '<div class="who">智能查询</div><div class="bubble"><div class="status">正在调取记录…</div><div class="tool-trace"></div><div class="body"></div></div>');
+      const status = bot.querySelector(".status");
+      const trace = bot.querySelector(".tool-trace");
+      const body = bot.querySelector(".body");
+      const chartSpecs = [];
+      const mapSpecs = [];
+      const toolTrace = [];
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, session_id: sid })
+      });
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "", raw = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n");
+        buf = parts.pop();
+        for (const part of parts) {
+          const line = part.split("\n").filter(l => l.startsWith("data:")).map(l => l.slice(5).trim()).join("");
+          if (!line) continue;
+          const ev = JSON.parse(line);
+          if (ev.type === "status") status.textContent = ev.text;
+          if (ev.type === "tool") {
+            const existingTool = toolTrace.find(t => t.name === ev.name);
+            if (existingTool) existingTool.phase = ev.phase;
+            else toolTrace.push({ name: ev.name, label: ev.label, phase: ev.phase });
+            trace.innerHTML = renderToolTrace(toolTrace);
+            const monitor = document.getElementById("toolMonitor");
+            if (monitor) monitor.innerHTML = '<span class="tool-monitor-label">工具调用监视</span>' + renderToolTrace(toolTrace);
+          }
+          if (ev.type === "token") { status.textContent = ""; raw += ev.text; body.innerHTML = renderMd(raw) + renderCharts(chartSpecs) + renderMaps(mapSpecs); log.scrollTop = log.scrollHeight; }
+          if (ev.type === "chart" && ev.chart) { chartSpecs.push(ev.chart); status.textContent = ""; body.innerHTML = renderMd(raw) + renderCharts(chartSpecs) + renderMaps(mapSpecs); log.scrollTop = log.scrollHeight; }
+          if (ev.type === "map" && ev.map) { mapSpecs.push(ev.map); status.textContent = ""; body.innerHTML = renderMd(raw) + renderCharts(chartSpecs) + renderMaps(mapSpecs); log.scrollTop = log.scrollHeight; }
+          if (ev.type === "error") { status.textContent = ""; body.textContent = ev.text; raw = ev.text; }
+        }
+      }
+      if (raw || chartSpecs.length || mapSpecs.length) body.innerHTML = renderMd(raw) + renderCharts(chartSpecs) + renderMaps(mapSpecs);
+      const existing = (chats.find(x => x.id === currentId) || {}).messages || [];
+      const messages = existing.concat([{ role: "user", text: text }, { role: "bot", text: raw || "", charts: chartSpecs, maps: mapSpecs, tools: toolTrace }]);
+      upsertChat(text.slice(0, 18), domainOf(text), messages);
+    }
+    async function runTests() {
+      document.getElementById("sum").textContent = "测试中…";
+      const res = await fetch("/api/skill-tests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skill_id: document.getElementById("skill").value,
+          include_e2e: document.getElementById("e2e").checked
+        })
+      });
+      const report = await res.json();
+      document.getElementById("sum").innerHTML = "<b>" + report.passed + "/" + report.total + " 通过</b>";
+      document.getElementById("rows").innerHTML = (report.results || []).map(r =>
+        "<tr><td class='" + (r.ok ? "ok" : "fail") + "'>" + (r.ok ? "通过" : "失败") + "</td>" +
+        "<td>" + r.skill_id + "</td><td>" + r.title + "</td><td>" + r.elapsed_ms + "</td>" +
+        "<td>" + (r.tools || []).join(", ") + "</td><td>" + (r.errors || []).join("；") + "</td></tr>"
+      ).join("");
+      document.getElementById("detail").textContent = report.detail || "";
+    }
+
+    chats = loadChats();
+    if (!chats.length) { chats = seed(); saveChats(); }
+    renderHist();
+    renderLog([]);
+    loadKnowledge();
+  </script>
+</body>
+</html>
