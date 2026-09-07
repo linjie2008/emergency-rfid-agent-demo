@@ -1,253 +1,102 @@
 {
-  "as_of": "2026-08-28",
-  "scope": "中国国家级医疗急诊与医疗资产管理现行文件",
+  "as_of": "2026-09-02",
+  "scope": "能源企业安全生产、电力运行、供热燃气与承包商作业管理制度",
   "documents": [
     {
-      "id": "primary-care-quality-action-2026-2028",
-      "category": "emergency",
-      "title": "基层医疗卫生机构医疗质量改善三年行动方案（2026—2028年）",
-      "document_no": "国卫办基层发〔2026〕4号",
-      "issuer": "国家卫生健康委办公厅、国家中医药局综合司",
-      "issued_at": "2026-03-26",
-      "effective_date": "2026-03-26",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "面向基层医疗卫生机构的三年质量改善行动，明确急诊、胸痛、卒中和创伤救治单元建设以及院前院内信息衔接要求。",
-      "keywords": ["基层医疗", "急诊急救", "胸痛", "卒中", "创伤", "绿色通道", "院前院内衔接", "急救设备"],
-      "key_points": [
-        "加强开设急诊、胸痛救治单元、卒中救治单元和创伤救治单元的基层机构急诊急救能力建设。",
-        "结合实际加强急救药品、设施设备配备，并定期开展急救技能培训和应急演练。",
-        "强化院前急救与院内急诊的信息共享、初步救治、稳定生命体征和转诊衔接。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/jws/c100073/202603/201d75eaec464d2e8ac610db14fa621d.shtml"
+      "id": "work-safety-law-2021", "category": "safety", "title": "中华人民共和国安全生产法",
+      "document_no": "中华人民共和国主席令第八十八号", "issuer": "全国人民代表大会常务委员会", "issued_at": "2021-06-10", "effective_date": "2021-09-01", "level": "法律", "status": "现行",
+      "summary": "规定生产经营单位安全生产主体责任、全员责任制、双重预防机制、从业人员权利义务和事故应急处置。",
+      "keywords": ["安全生产", "主体责任", "全员责任制", "风险分级管控", "隐患排查", "应急救援"],
+      "key_points": ["建立健全全员安全生产责任制。", "构建安全风险分级管控和隐患排查治理双重预防机制。", "危险作业应安排专门人员进行现场安全管理。"],
+      "source_url": "https://www.gov.cn/xinwen/2021-06/11/content_5616918.htm"
     },
     {
-      "id": "national-quality-goals-2026",
-      "category": "emergency",
-      "title": "2026年国家医疗质量安全改进目标",
-      "document_no": "国卫办医政函〔2026〕63号",
-      "issuer": "国家卫生健康委办公厅",
-      "issued_at": "2026-02-14",
-      "effective_date": "2026-02-14",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "2026年度国家医疗质量安全目标，覆盖脑血管病急性期、感染性休克、不良事件报告和关键诊疗记录等急危重症相关质量改进。",
-      "keywords": ["医疗质量", "急危重症", "脑血管病", "感染性休克", "不良事件", "诊疗记录"],
-      "key_points": [
-        "提高脑血管病急性期规范诊疗率和感染性休克集束化治疗完成率。",
-        "提高医疗质量安全不良事件报告率和关键诊疗行为相关记录完整率。",
-        "要求医疗机构持续收集、分析和反馈质量数据，推进目标管理。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/yzygj/c100068/202603/9f642951b99c447f8cff9da8abb74dc3.shtml"
+      "id": "special-work-gb30871-2022", "category": "safety", "title": "危险化学品企业特殊作业安全规范",
+      "document_no": "GB 30871—2022", "issuer": "国家市场监督管理总局、国家标准化管理委员会", "issued_at": "2022-03-15", "effective_date": "2022-10-01", "level": "强制性国家标准", "status": "现行",
+      "summary": "规范动火、受限空间、盲板抽堵、高处、吊装、临时用电、动土和断路等特殊作业全过程安全管理。",
+      "keywords": ["作业票", "动火", "受限空间", "高处", "吊装", "临时用电", "气体检测", "监护人"],
+      "key_points": ["作业前开展危险有害因素辨识并办理作业审批。", "动火和受限空间作业按要求进行气体分析。", "监护人应持证履职并保持作业全过程监护。"],
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/index"
     },
     {
-      "id": "outpatient-emergency-information-page-2024",
-      "category": "emergency",
-      "title": "门（急）诊诊疗信息页质量管理规定（试行）",
-      "document_no": "国卫办医政发〔2024〕16号",
-      "issuer": "国家卫生健康委办公厅",
-      "issued_at": "2024-09-04",
-      "effective_date": "2024-11-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "统一门急诊诊疗信息的汇总、保存、质量控制和接口要求，为分析急诊等候时间、分级与去向提供数据基础。",
-      "keywords": ["门急诊", "信息页", "数据接口", "急诊分级", "患者去向", "等候时间", "信息质量"],
-      "key_points": [
-        "信息页汇总患者基本信息、就诊过程、诊疗和费用等信息，并以电子数据集或电子文档保存。",
-        "就诊过程信息包括挂号、报到、就诊时间、急诊患者分级、患者去向和住院证开具时间。",
-        "医院应分析信息完整性、规范性、真实性和准确性，并利用信息持续改进门急诊质量。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/yzygj/c100068/202409/a58db40867bf4ea5a34f24a6b0486a9d.shtml"
+      "id": "limited-space-order-13", "category": "safety", "title": "工贸企业有限空间作业安全规定",
+      "document_no": "应急管理部令第13号", "issuer": "应急管理部", "issued_at": "2023-11-29", "effective_date": "2024-01-01", "level": "部门规章", "status": "现行",
+      "summary": "规定有限空间辨识建档、监护、审批、防护、检测、通风和应急救援要求。",
+      "keywords": ["有限空间", "受限空间", "监护", "气体检测", "通风", "应急救援"],
+      "key_points": ["建立有限空间管理台账并设置安全警示标志。", "作业实行审批并明确现场负责人和监护人员。", "遵循先通风、再检测、后作业原则。"],
+      "source_url": "https://www.mem.gov.cn/gk/zfxxgkpt/fdzdgknr/202312/t20231208_471582.shtml"
     },
     {
-      "id": "emergency-quality-indicators-2024",
-      "category": "emergency",
-      "title": "急诊医学专业医疗质量控制指标（2024年版）",
-      "document_no": "国卫办医政函〔2024〕150号",
-      "issuer": "国家卫生健康委办公厅",
-      "issued_at": "2024-04-30",
-      "effective_date": "2024-04-30",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "现行急诊医学专业国家质控指标，取代2015年版，用于急诊资源配置、分级分诊、抢救效率与急危重症救治质量管理。",
-      "keywords": ["急诊医学", "质量控制", "预检分诊", "绿色通道", "抢救室", "滞留时间", "医患比", "护患比"],
-      "key_points": [
-        "以急诊科医患比、护患比等指标监测急诊人力资源配置。",
-        "通过急诊分级、抢救室滞留和急危重症救治相关指标开展精细化质量管理。",
-        "医疗机构应结合预检分诊和绿色通道流程持续改进急诊服务效率。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/wjw/c100378/202405/e0ca1ff9a54c4ded97ad6d5b247786c8.shtml"
+      "id": "emergency-plan-management", "category": "safety", "title": "生产安全事故应急预案管理办法",
+      "document_no": "应急管理部令第2号（修正）", "issuer": "应急管理部", "issued_at": "2019-07-11", "effective_date": "2019-09-01", "level": "部门规章", "status": "现行",
+      "summary": "规范生产安全事故应急预案编制、评审、公布、备案、培训、演练、评估和修订。",
+      "keywords": ["应急预案", "应急演练", "事故处置", "预案备案", "应急培训"],
+      "key_points": ["结合风险辨识和应急资源调查编制预案。", "定期组织应急预案演练并评估效果。", "事故风险发生重大变化时及时修订。"],
+      "source_url": "https://www.mem.gov.cn/gk/gwgg/agwzlfl/zjl_01/201907/t20190724_337039.shtml"
     },
     {
-      "id": "national-health-emergency-teams-2024",
-      "category": "emergency",
-      "title": "国家卫生应急队伍管理办法",
-      "document_no": "国卫医急发〔2024〕11号",
-      "issuer": "国家卫生健康委、国家中医药局、国家疾控局",
-      "issued_at": "2024-03-19",
-      "effective_date": "2024-03-19",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "规范国家卫生应急队伍的分类、建设、装备、培训、演练、调用和保障，覆盖紧急医学救援等六类队伍。",
-      "keywords": ["卫生应急", "紧急医学救援", "应急队伍", "装备", "物资", "培训", "演练"],
-      "key_points": [
-        "明确紧急医学救援、重大疫情医疗应急等国家卫生应急队伍分类和能力要求。",
-        "建设单位应落实人员、装备、物资、通信和自我保障能力。",
-        "按年度计划开展培训和演练，接受统一调度并做好平急转换。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/ylyjs/gzdt/202403/052caf433b8f4f19a25c9b24a54e4afd.shtml"
+      "id": "power-safety-supervision", "category": "power", "title": "电力安全生产监督管理办法",
+      "document_no": "国家发展和改革委员会令第21号", "issuer": "国家发展和改革委员会", "issued_at": "2015-02-17", "effective_date": "2015-03-01", "level": "部门规章", "status": "现行",
+      "summary": "明确电力企业安全生产主体责任和电力监管机构监督管理职责。",
+      "keywords": ["电力安全", "发电", "电网", "安全监督", "隐患排查", "可靠运行"],
+      "key_points": ["电力企业主要负责人对本单位安全生产全面负责。", "建立事故隐患排查治理制度并开展风险管控。", "保障电力系统安全稳定运行和可靠供电。"],
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/fzggwl/201502/t20150217_960821.html"
     },
     {
-      "id": "prehospital-emergency-management-2013",
-      "category": "emergency",
-      "title": "院前医疗急救管理办法",
-      "document_no": "国家卫生和计划生育委员会令第3号",
-      "issuer": "原国家卫生和计划生育委员会",
-      "issued_at": "2013-11-29",
-      "effective_date": "2014-02-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "规范急救中心、急救站和急救网络医院的院前医疗急救、统一调度、现场抢救、转运监护及院内交接。",
-      "keywords": ["院前急救", "120", "统一调度", "转运", "交接", "急救网络医院"],
-      "key_points": [
-        "院前急救包括医疗机构外现场抢救、转运途中紧急救治和监护。",
-        "急救中心（站）和急救网络医院接受统一指挥调度。",
-        "应规范患者转运、病情告知和与接收医疗机构的交接。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/wjw/c100221/202201/26ea3c97e82d466f9aa2b4a9901ae187.shtml"
+      "id": "power-reliability-2022", "category": "power", "title": "电力可靠性管理办法（暂行）",
+      "document_no": "国家发展和改革委员会令第50号", "issuer": "国家发展和改革委员会", "issued_at": "2022-04-16", "effective_date": "2022-06-01", "level": "部门规章", "status": "现行",
+      "summary": "规范发电、输变电、供电系统可靠性管理、信息统计与监督管理。",
+      "keywords": ["供电可靠性", "机组可用率", "停电", "输变电", "可靠性指标"],
+      "key_points": ["建立覆盖电力系统各环节的可靠性管理体系。", "准确、及时报送可靠性信息。", "加强停电计划和设备状态管理。"],
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/fzggwl/202204/t20220424_1322778.html"
     },
     {
-      "id": "operating-room-equipment-standard-2024",
-      "category": "asset",
-      "title": "手术室医学装备配置标准（WS/T 835—2024）",
-      "document_no": "WS/T 835—2024",
-      "issuer": "国家卫生健康委",
-      "issued_at": "2024-04-19",
-      "effective_date": "2024-11-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "规定各级医疗机构手术室医学装备的分类、配置与管理原则，强调集中管理、统一调配、安全高效和避免闲置浪费。",
-      "keywords": ["手术室", "医学装备", "配置标准", "统一调配", "使用率", "急救转运装备"],
-      "key_points": [
-        "手术室医学装备配置应与医院功能定位、手术量和技术能力相适应。",
-        "由医学装备管理部门集中管理、统一调配，提高使用率并避免资源浪费。",
-        "装备包括基础、麻醉、手术辅助、急救转运和信息化装备等类别。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/fzs/c100048/202404/6c0e351dbe914df9a4cb20038e9dd9de/files/1733125943001_66140.pdf"
+      "id": "power-accident-regulation", "category": "power", "title": "电力安全事故应急处置和调查处理条例",
+      "document_no": "国务院令第599号", "issuer": "国务院", "issued_at": "2011-07-07", "effective_date": "2011-09-01", "level": "行政法规", "status": "现行",
+      "summary": "规定电力安全事故等级、应急处置、事故报告、调查处理和法律责任。",
+      "keywords": ["电力事故", "应急处置", "事故调查", "电网事故", "停电"],
+      "key_points": ["事故发生后立即启动相应应急预案。", "采取措施恢复电力生产和电网运行。", "按规定及时、准确报告事故信息。"],
+      "source_url": "https://www.gov.cn/zwgk/2011-07/15/content_1906758.htm"
     },
     {
-      "id": "large-medical-equipment-directory-2023",
-      "category": "asset",
-      "title": "大型医用设备配置许可管理目录（2023年）",
-      "document_no": "国卫财务发〔2023〕7号",
-      "issuer": "国家卫生健康委",
-      "issued_at": "2023-03-03",
-      "effective_date": "2023-03-03",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "现行大型医用设备配置许可目录，划分甲类和乙类设备及价格兜底标准，是判断设备是否需要配置许可的直接依据。",
-      "keywords": ["大型医用设备", "配置许可", "甲类", "乙类", "PET/CT", "PET/MR", "放射治疗"],
-      "key_points": [
-        "甲类由国家卫生健康委配置管理，乙类由省级卫生健康部门配置管理。",
-        "目录列明重离子质子、高端放疗、PET/MR、PET/CT、内窥镜手术系统等设备。",
-        "首次配置单台（套）价格达到相应限额的大型医疗器械纳入许可管理。"
-      ],
-      "source_url": "https://zwfw.nhc.gov.cn/kzx/tzgg/jldxyysbpzxksp_229/202303/t20230322_2482.html"
+      "id": "power-25-measures-2023", "category": "power", "title": "防止电力生产事故的二十五项重点要求（2023版）",
+      "document_no": "国能发安全〔2023〕22号", "issuer": "国家能源局", "issued_at": "2023-03-09", "effective_date": "2023-03-09", "level": "行业管理文件", "status": "现行",
+      "summary": "覆盖人身伤亡、火灾、机组、电网、热控、继电保护、输变电和新能源事故防范。",
+      "keywords": ["二十五项反措", "人身伤亡", "机组", "电网", "继电保护", "输电线路", "反事故"],
+      "key_points": ["强化高风险作业和两票三制管理。", "加强设备状态监测与异常预警。", "落实防止机组非停和大面积停电措施。"],
+      "source_url": "https://www.nea.gov.cn/2023-03/16/c_1310703918.htm"
     },
     {
-      "id": "clinical-use-medical-devices-2021",
-      "category": "asset",
-      "title": "医疗器械临床使用管理办法",
-      "document_no": "国家卫生健康委员会令第8号",
-      "issuer": "国家卫生健康委",
-      "issued_at": "2021-01-12",
-      "effective_date": "2021-03-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "医疗机构临床使用医疗器械的核心规章，覆盖组织责任、采购验收、档案、培训、维护维修、运行环境、自查和安全事件处置。",
-      "keywords": ["医疗器械", "临床使用", "验收", "维护", "维修", "档案", "自查", "安全事件"],
-      "key_points": [
-        "医疗机构主要负责人是第一责任人，使用科室负责登记、核对和日常维护保养。",
-        "建立进货查验、安装集成、验收验证、临床使用评估和信息档案制度。",
-        "跟踪记录维护维修全过程，每年开展自查评价；安全事件应及时控制和报告。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/fzs/c100048/202102/d6b9e0d12c46450a86c7fdf478ef8053.shtml"
+      "id": "cogeneration-management-2016", "category": "heat_gas", "title": "热电联产管理办法",
+      "document_no": "发改能源〔2016〕617号", "issuer": "国家发展改革委等五部门", "issued_at": "2016-03-22", "effective_date": "2016-03-22", "level": "部门规范性文件", "status": "现行",
+      "summary": "规范热电联产规划建设、运行调度、热力市场和节能环保管理。",
+      "keywords": ["热电联产", "供热", "热负荷", "以热定电", "节能", "调度"],
+      "key_points": ["热电联产项目以集中供热需求为基础。", "科学安排运行方式并提高能源利用效率。", "建立供热质量和安全保障机制。"],
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/201604/t20160411_963087.html"
     },
     {
-      "id": "medical-device-supervision-regulation-2021",
-      "category": "asset",
-      "title": "医疗器械监督管理条例",
-      "document_no": "中华人民共和国国务院令第739号",
-      "issuer": "国务院",
-      "issued_at": "2021-02-09",
-      "effective_date": "2021-06-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "医疗器械研制、生产、经营、使用和监督管理的上位行政法规，确立风险管理、全程管控、追溯和不良事件监测要求。",
-      "keywords": ["医疗器械", "监督管理", "使用单位", "风险管理", "追溯", "不良事件"],
-      "key_points": [
-        "医疗器械监督管理遵循风险管理、全程管控、科学监管和社会共治原则。",
-        "使用单位应使用依法注册或备案、合格且在有效期内的医疗器械。",
-        "建立进货查验、使用记录、不良事件监测和召回协同等制度。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/bgt/gwywj2/202103/d1d32cd516af4c78bcb7eed0d90f8b2c.shtml"
+      "id": "urban-gas-regulation", "category": "heat_gas", "title": "城镇燃气管理条例",
+      "document_no": "国务院令第583号", "issuer": "国务院", "issued_at": "2010-11-19", "effective_date": "2011-03-01", "level": "行政法规", "status": "现行",
+      "summary": "规范燃气发展保障、经营服务、使用、设施保护、安全事故预防与处理。",
+      "keywords": ["燃气", "门站", "调压站", "燃气设施", "泄漏", "应急预案", "安全检查"],
+      "key_points": ["燃气经营者建立健全安全评估和风险管理体系。", "定期检查维护燃气设施并及时消除隐患。", "制定燃气安全事故应急预案并定期演练。"],
+      "source_url": "https://www.gov.cn/zwgk/2010-11/26/content_1752647.htm"
     },
     {
-      "id": "state-owned-assets-regulation-2021",
-      "category": "asset",
-      "title": "行政事业性国有资产管理条例",
-      "document_no": "中华人民共和国国务院令第738号",
-      "issuer": "国务院",
-      "issued_at": "2021-02-01",
-      "effective_date": "2021-04-01",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "公立医疗卫生事业单位国有资产配置、使用、维护、盘点、处置、报告和监督的基础法规。",
-      "keywords": ["国有资产", "公立医院", "资产台账", "盘点", "维护", "维修", "处置", "绩效"],
-      "key_points": [
-        "资产配置应提出需求、纳入预算并执行配置标准，建立资产绩效管理制度。",
-        "设置国有资产台账并进行会计核算，定期盘点对账，确保账实相符、账账相符。",
-        "明确维护保养维修岗位责任，资产处置需履行审批并及时核销台账。"
-      ],
-      "source_url": "https://zcgls.mof.gov.cn/zhuantilanmu/fgzd/202410/t20241010_3945213.htm"
+      "id": "contractor-safety-guidance", "category": "contractor", "title": "关于加强中央企业承包商安全管理的指导意见",
+      "document_no": "国资发综合〔2021〕28号", "issuer": "国务院国有资产监督管理委员会", "issued_at": "2021-04-27", "effective_date": "2021-04-27", "level": "部门指导文件", "status": "现行",
+      "summary": "加强承包商准入、选择、合同、入场、作业、评价和退出全生命周期安全管理。",
+      "keywords": ["承包商", "准入", "资质", "安全协议", "入场培训", "作业监督", "黑名单"],
+      "key_points": ["严格承包商资质能力和安全业绩审查。", "将安全要求纳入合同并明确双方责任。", "强化入场教育、现场监督、绩效评价和退出管理。"],
+      "source_url": "https://www.sasac.gov.cn/n2588035/n2588320/n2588335/c18527441/content.html"
     },
     {
-      "id": "large-medical-equipment-management-2018",
-      "category": "asset",
-      "title": "大型医用设备配置与使用管理办法（试行）",
-      "document_no": "国卫规划发〔2018〕12号",
-      "issuer": "国家卫生健康委、国家药品监督管理局",
-      "issued_at": "2018-05-22",
-      "effective_date": "2018-05-22",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "规范大型医用设备目录、规划、配置许可、使用、档案、维护和监督评价，实行一机一证和全过程管理。",
-      "keywords": ["大型医用设备", "一机一证", "配置许可", "设备档案", "维护", "校准", "使用评价"],
-      "key_points": [
-        "目录内设备实行分级分类配置规划和配置许可证管理，许可证一机一证。",
-        "建立采购、安装、验收、使用、维护、维修和质量控制完整档案。",
-        "定期检查、检验、校准、保养和维护；存在安全隐患时应立即停止使用。"
-      ],
-      "source_url": "https://zwfw.nhc.gov.cn/kzx/zcfg/jldxyysbpzxksp_241/201806/t20180613_1468.html"
-    },
-    {
-      "id": "medical-equipment-management-2011",
-      "category": "asset",
-      "title": "医疗卫生机构医学装备管理办法",
-      "document_no": "卫规财发〔2011〕24号",
-      "issuer": "原卫生部",
-      "issued_at": "2011-03-24",
-      "effective_date": "2011-03-24",
-      "level": "国家级",
-      "status": "现行",
-      "summary": "医疗卫生机构医学装备全生命周期管理的基础办法，覆盖规划、采购、验收、电子台账、使用、维护、评价、调拨和报废。",
-      "keywords": ["医学装备", "全生命周期", "采购", "验收", "电子台账", "档案", "维护", "报废", "应急预案"],
-      "key_points": [
-        "实行机构领导、医学装备管理部门和使用部门三级管理，重大事项经装备管理委员会论证。",
-        "建立分类分户电子台账和装备档案，落实验收、质控、维修与预防性维护。",
-        "生命支持类和急救类装备应重点监控并制定应急预案；闲置低效装备应调剂或依规处置。"
-      ],
-      "source_url": "https://www.nhc.gov.cn/wjw/gfxwj/201103/62590d5e8823485e98f1d92ec1db8e96.shtml"
+      "id": "two-tickets-three-systems", "category": "power", "title": "电业安全工作规程（发电厂和变电站电气部分）",
+      "document_no": "GB 26860—2011", "issuer": "国家质量监督检验检疫总局、国家标准化管理委员会", "issued_at": "2011-07-29", "effective_date": "2012-06-01", "level": "国家标准", "status": "现行",
+      "summary": "规定发电厂和变电站电气作业的组织措施、技术措施、工作票和操作票要求。",
+      "keywords": ["两票三制", "工作票", "操作票", "倒闸操作", "停电", "验电", "接地线"],
+      "key_points": ["电气作业落实工作票和工作许可制度。", "停电作业执行停电、验电、接地等技术措施。", "明确工作负责人、许可人和专责监护人的职责。"],
+      "source_url": "https://openstd.samr.gov.cn/bzgk/gb/index"
     }
   ]
 }

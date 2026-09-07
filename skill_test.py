@@ -214,6 +214,49 @@ E2E_CASES: list[dict[str, Any]] = [
     },
 ]
 
+INDUSTRIAL_CASE_ARGS = {
+    "create_data_table": {"title": "测试表格", "rows_json": '[{"项目":"在线人数","数值":6}]'},
+    "create_chart": {"chart_type": "pie", "title": "测试图表", "data_json": '[{"name":"正常","value":6}]'},
+    "format_concise_reply": {"conclusion": "当前运行正常", "facts_json": '[{"项目":"在线人数","内容":"6人"}]'},
+    "format_executive_brief": {"conclusion": "整体平稳", "kpis_json": '[{"指标":"在线率","数值":"98%"}]'},
+    "format_alarm_disposal_card": {"alarm": "越界告警", "level": "高", "location": "受限区域"},
+    "format_positioning_report": {"subject": "测试人员", "current_location": "一号装置区"},
+    "format_shift_handover": {"summary": "本班运行平稳", "pending_json": '[{"事项":"复核设备","状态":"待处理"}]'},
+    "query_employees": {"keyword": "张伟"}, "query_contractor_staff": {}, "query_contractors": {},
+    "query_departments": {}, "query_visitors": {}, "summarize_employees": {},
+    "query_locations_realtime": {}, "query_locations_history": {"person": "张伟"},
+    "query_region_enter_leave": {"person": "张伟"}, "query_region_enter_leave_summary": {},
+    "query_online_persons": {}, "list_work_tickets": {}, "summarize_work_tickets": {},
+    "query_asset_locations_realtime": {},
+    "query_asset_locations_history": {"asset": "便携式气体检测仪01"},
+    "query_asset_region_enter_leave": {"asset": "便携式气体检测仪01"},
+    "list_work_ticket_compliance": {}, "summarize_work_ticket_compliance": {},
+    "trend_work_ticket_compliance": {}, "group_work_ticket_compliance": {},
+    "rank_work_ticket_compliance_rules": {}, "get_work_ticket_compliance_detail": {"ticket_no": "WT-20260902-002"},
+    "get_work_ticket_process_analysis": {"ticket_no": "WT-20260902-002"}, "summarize_alarms": {},
+    "analyze_alarms": {}, "query_devices": {}, "summarize_devices": {}, "query_card_bind_records": {},
+    "query_attendances": {}, "query_schedules": {}, "query_access_records": {},
+    "query_work_ticket_workhour_person": {}, "query_work_ticket_workhour_contractor": {},
+    "query_loitering_sessions": {}, "query_abnormal_dwell_summary": {},
+    "query_trajectory_distance": {"person": "张伟"}, "query_work_intensity_summary": {},
+    "query_workload_analysis": {}, "query_inspection_list": {}, "render_personnel_tree": {},
+    "render_personnel_timeline": {"person": "张伟"},
+    "show_factory_3d_map": {"keyword": "所有"},
+    "query_generation_units": {}, "query_power_generation_realtime": {}, "summarize_grid_load": {},
+    "query_substations": {}, "query_line_operations": {}, "query_outage_events": {},
+    "query_heat_supply": {}, "query_heat_network_alarms": {}, "query_gas_supply": {},
+    "query_dispatch_commands": {}, "query_energy_consumption": {}, "query_energy_safety_risks": {},
+    "summarize_energy_kpis": {},
+    "query_predictive_monitoring_terminals": {"online_status": "离线"},
+    "summarize_predictive_monitoring_terminals": {},
+    "query_equipment_health": {"risk_level": "高"},
+    "query_condition_monitoring": {"asset_id": "PM-001", "hours": 12},
+    "predict_equipment_failures": {"horizon_days": 30},
+    "query_remaining_useful_life": {"max_days": 180},
+    "recommend_predictive_maintenance": {"priority": "紧急"},
+    "summarize_predictive_maintenance": {},
+}
+
 
 def _as_json(text: str) -> Any:
     try:
@@ -344,11 +387,15 @@ def run_skill_tests(
     agent=None,
 ) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
-    tool_cases = TOOL_CASES
-    e2e_cases = E2E_CASES
+    tool_cases = [
+        {"id": f"{name}.smoke", "skill_id": name, "title": f"{name} 接口冒烟测试", "args": args,
+         "contains": [], "json_subset": None}
+        for name, args in INDUSTRIAL_CASE_ARGS.items() if name in TOOL_BY_NAME
+    ]
+    e2e_cases = []
     if skill_id and skill_id != "all":
-        tool_cases = [c for c in TOOL_CASES if c["skill_id"] == skill_id]
-        e2e_cases = [c for c in E2E_CASES if c["skill_id"] == skill_id]
+        tool_cases = [c for c in tool_cases if c["skill_id"] == skill_id]
+        e2e_cases = []
         if skill_id != "e2e_chat":
             e2e_cases = []
         if skill_id == "e2e_chat":

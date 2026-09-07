@@ -1,4 +1,4 @@
-"""急诊绿通 RFID 进出记录 — 与接口文档字段对齐的 mock 数据。"""
+"""工业在制品 RFID 流转记录 — 保持既有接口字段兼容的 mock 数据。"""
 
 from __future__ import annotations
 
@@ -33,6 +33,64 @@ GATES = {
     "收费处": ("大厅入口", "大厅出口"),
     "病房": ("病房入口", "病房出口"),
 }
+
+# 底层继续兼容原接口字段，输出数据在这里转换为离散制造场景。
+INDUSTRIAL_AREAS = {
+    "分诊台": "来料检验区", "抢救室": "装配工位", "CT室": "无损检测区",
+    "DR室": "尺寸检测区", "介入室": "精加工区", "卒中单元": "成品暂存区",
+    "观察室": "质量复检区", "手术室": "返修工位", "检验科": "材料实验室",
+    "CCU": "包装区", "ICU": "质量隔离区", "产科": "焊接区",
+    "儿科急诊": "涂装区", "收费处": "出库区", "病房": "成品仓",
+}
+INDUSTRIAL_CHANNELS = {
+    "胸痛绿通": "泵体生产线", "卒中绿通": "阀组生产线", "创伤绿通": "重型装配线",
+    "孕产妇绿通": "焊接生产线", "儿科绿通": "涂装生产线", "急诊绿通": "柔性生产线",
+}
+CORE_BATCH_NAMES = {
+    "张三": "泵体批次A01", "李四": "阀组批次B02", "王五": "壳体批次C03",
+    "赵六": "轴承批次D04", "陈七": "紧固件批次E05",
+}
+INDUSTRIAL_ACTIONS = {
+    "到达分诊": "到达来料检验", "分诊": "检验放行", "离开分诊": "离开来料检验",
+    "进入抢救": "进入装配", "离开抢救": "离开装配", "返回抢救": "返回装配",
+    "心电图": "扭矩检测", "抽血": "材料取样", "CT检查": "无损检测",
+    "溶栓评估": "装配评估", "溶栓": "参数校准", "清创": "表面处理",
+    "拍片": "尺寸检测", "观察": "工艺观察", "会诊": "质量会审",
+    "介入治疗": "精加工", "收治住院": "工序入库", "急诊手术": "返修作业",
+    "留观": "质量复检", "离院": "完成出库", "评估": "质量评估",
+    "产科会诊": "焊接评审", "产房准备": "焊接准备", "分娩": "焊接作业",
+    "儿科接诊": "涂装上线", "雾化": "喷涂作业", "输液": "润滑加注",
+    "呼吸支持": "气密检测", "抗休克": "结构加固", "止血": "密封处理",
+    "包扎": "包装作业", "急查肌钙蛋白": "材料快检",
+}
+
+
+def _industrialize(records: list[dict[str, Any]], patients: dict[str, dict[str, str]]) -> tuple[list[dict[str, Any]], dict[str, dict[str, str]]]:
+    """把医疗演示数据无损映射成工业批次、工位和生产路线。"""
+    no_map = {no: no.replace("MZ", "WO", 1) for no in patients}
+    name_map = {
+        meta["name"]: CORE_BATCH_NAMES.get(meta["name"], f"生产批次-{meta['name'].replace('昨日', '前日')}")
+        for meta in patients.values()
+    }
+    converted_patients: dict[str, dict[str, str]] = {}
+    for no, meta in patients.items():
+        converted = dict(meta)
+        converted["name"] = name_map[meta["name"]]
+        converted["channel"] = INDUSTRIAL_CHANNELS.get(meta["channel"], meta["channel"])
+        converted_patients[no_map[no]] = converted
+    for row in records:
+        row["hospitalNo"] = no_map[row["hospitalNo"]]
+        row["patientName"] = name_map[row["patientName"]]
+        row["areaName"] = INDUSTRIAL_AREAS.get(row.get("areaName"), row.get("areaName"))
+        for key in ("importName", "importName2"):
+            value = row.get(key)
+            if not value:
+                continue
+            for old, new in INDUSTRIAL_AREAS.items():
+                value = value.replace(old, new)
+            value = INDUSTRIAL_ACTIONS.get(value, value)
+            row[key] = value
+    return records, converted_patients
 
 
 def _event(

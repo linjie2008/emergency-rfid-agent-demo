@@ -86,7 +86,7 @@ def build_timeline(events: list[dict[str, Any]]) -> dict[str, Any]:
         "patientName": first.get("patientName"),
         "hospitalNo": hospital_no,
         "wristbandEpc": first.get("wristbandEpc"),
-        "channel": meta.get("channel", "急诊绿通"),
+        "channel": meta.get("channel", "柔性生产线"),
         "firstTime": first["createTime"],
         "lastTime": last["createTime"],
         "totalMinutes": minutes_between(first["createTime"], last["createTime"]),
@@ -99,7 +99,7 @@ def build_timeline(events: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def timeout_patients(threshold_minutes: float = 120) -> list[dict[str, Any]]:
-    """当前仍在抢救室且停留超过阈值的患者。"""
+    """当前仍在装配工位且停留超过阈值的在制品。"""
     hits = []
     for no, meta in PATIENTS.items():
         events = filter_records(hospital_no=no)
@@ -107,7 +107,7 @@ def timeout_patients(threshold_minutes: float = 120) -> list[dict[str, Any]]:
         if not tl.get("ok"):
             continue
         for cur in tl.get("currentAreas") or []:
-            if cur["area"] == "抢救室" and cur["minutes"] >= threshold_minutes:
+            if cur["area"] == "装配工位" and cur["minutes"] >= threshold_minutes:
                 hits.append(
                     {
                         "patientName": tl["patientName"],

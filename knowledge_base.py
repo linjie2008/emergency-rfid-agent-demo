@@ -1,4 +1,4 @@
-"""国家级医疗急诊与医疗资产管理文件的轻量检索。"""
+"""能源企业安全生产制度与法规的轻量检索。"""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def catalog_metadata() -> dict[str, str]:
 def list_documents(category: str = "") -> list[dict[str, Any]]:
     category = (category or "").strip().lower()
     rows = [dict(item) for item in _catalog()["documents"]]
-    if category in {"emergency", "asset"}:
+    if category:
         rows = [item for item in rows if item["category"] == category]
     return sorted(rows, key=lambda item: item["issued_at"], reverse=True)
 
@@ -44,8 +44,7 @@ def _query_terms(query: str) -> list[str]:
         if not term:
             continue
         terms.append(term)
-        # 中文搜索通常不输入空格；补充二字词片段，让“医疗设备维护台账”
-        # 能匹配文件中的“医疗设备”“维护”和“台账”。
+        # 中文搜索通常不输入空格；补充二字词片段提高制度检索召回率。
         for block in re.findall(r"[\u4e00-\u9fff]{4,}", term):
             terms.extend(block[index : index + 2] for index in range(len(block) - 1))
     return list(dict.fromkeys(terms))
@@ -53,15 +52,20 @@ def _query_terms(query: str) -> list[str]:
 
 def _score(document: dict[str, Any], terms: list[str]) -> int:
     title = document["title"].lower()
-    keywords = " ".join(document["keywords"]).lower()
-    key_points = " ".join(document["key_points"]).lower()
-    summary = document["summary"].lower()
+    keywords = " ".join(document.get("keywords", [])).lower()
+    key_points = " ".join(document.get("key_points", [])).lower()
+    summary = document.get("summary", "").lower()
+    doc_id = document.get("id", "").lower()
     score = 0
     for term in terms:
-        score += 8 if term in title else 0
-        score += 5 if term in keywords else 0
-        score += 3 if term in key_points else 0
-        score += 2 if term in summary else 0
+        t = term.lower()
+        # 针对较长词汇给予更高匹配权重，提升制度专有名词召回率
+        weight = 2 if len(t) > 2 else 1
+        score += 10 * weight if t in title else 0
+        score += 6 * weight if t in keywords else 0
+        score += 4 * weight if t in doc_id else 0
+        score += 3 * weight if t in key_points else 0
+        score += 2 * weight if t in summary else 0
     return score
 
 

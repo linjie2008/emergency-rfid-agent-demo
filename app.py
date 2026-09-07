@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""急诊绿通 RFID 对话 Demo。
+"""工业 RFID 智能体 Demo。
 
   python app.py                打开轻量网页（对话 + Skill 测试）
   python app.py --gradio       旧版 Gradio 界面
@@ -19,11 +19,11 @@ from skill_test import format_report, results_table, run_skill_tests
 from skills import SKILL_CATALOG, parse_skill_choice, skill_choices
 
 EXAMPLES = [
-    "张三现在在哪个区域，绿通走了多久？",
-    "门诊号 MZ20260608001 的完整流转轨迹",
-    "今天谁在抢救室待太久了？",
+    "泵体批次A01现在在哪个工位，流转了多久？",
+    "工单号 WO20260608001 的完整生产轨迹",
+    "今天哪些在制品在装配工位停留超时？",
     "各区域平均停留多久，瓶颈在哪？",
-    "李四溶栓前后的节点时间",
+    "阀组批次B02校准前后的节点时间",
 ]
 
 
@@ -35,7 +35,7 @@ def run_once(question: str) -> str:
 def run_cli() -> None:
     agent = build_agent()
     thread_id = f"cli-{uuid.uuid4().hex[:8]}"
-    print("急诊绿通 RFID 智能体  （输入 q 退出）")
+    print("人员安全智能运营中心  （输入 q 退出）")
     print("可以问：")
     for q in EXAMPLES:
         print(f"  - {q}")
@@ -94,15 +94,15 @@ def run_web() -> None:
         detail = format_report(report)
         return summary, results_table(report), detail
 
-    with gr.Blocks(title="急诊绿通 RFID Demo") as demo:
+    with gr.Blocks(title="人员安全智能运营中心") as demo:
         gr.Markdown(
-            "# 急诊绿通 · RFID 智能查询 Demo\n"
+            "# 人员安全智能运营中心\n"
             "LangGraph 智能体。数字全部由 Skill 从进出记录计算，不让模型估。"
         )
         with gr.Tabs():
             with gr.Tab("对话"):
                 chatbot = gr.Chatbot(label="对话", height=460)
-                question = gr.Textbox(label="提问", placeholder="例如：张三现在在哪？")
+                question = gr.Textbox(label="提问", placeholder="例如：泵体批次A01现在在哪？")
                 send = gr.Button("发送", variant="primary")
                 gr.Examples(EXAMPLES, inputs=question)
                 send.click(respond, [question, chatbot], chatbot).then(
@@ -138,7 +138,7 @@ def run_web() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="急诊绿通 RFID Agent Demo")
+    parser = argparse.ArgumentParser(description="工业 RFID Agent Demo")
     parser.add_argument("--cli", action="store_true", help="命令行模式")
     parser.add_argument("--once", metavar="问题", help="问一句后退出")
     parser.add_argument("--test-skills", action="store_true", help="运行 Skill 测试")

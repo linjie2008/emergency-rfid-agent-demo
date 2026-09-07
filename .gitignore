@@ -4,3 +4,7 @@ __pycache__/
 .env
 .gradio/
 *.pyc
+*.log
+.run/
+runtime/
+=1.0.0
